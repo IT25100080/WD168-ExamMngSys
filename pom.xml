@@ -9,7 +9,7 @@
         <relativePath/> <!-- lookup parent from repository -->
     </parent>
     <groupId>com.example</groupId>
-    <artifactId>WD168-ExmMngSym</artifactId>
+    <artifactId>WD168-ExmMngSys</artifactId>
     <version>0.0.1-SNAPSHOT</version>
     <name/>
     <description/>
