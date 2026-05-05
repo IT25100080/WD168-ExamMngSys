@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Results – ExamPortal</title>
+    <link rel="stylesheet" href="/css/styles.css">
+</head>
+<body>
+<div class="layout">
+    <aside class="sidebar">
+        <div class="sidebar-logo">Exam<span>Portal</span></div>
+        <nav class="sidebar-nav">
+            <a href="/pages/student/dashboard.html">🏠 Dashboard</a>
+            <a href="/pages/student/modules.html">📚 Modules</a>
+            <a href="/pages/student/exams.html">📝 My Exams</a>
+            <a href="/pages/student/results.html" class="active">📊 My Results</a>
+        </nav>
+        <div class="sidebar-bottom">
+            <div class="sidebar-user" id="sidebarUser"></div>
+            <button class="btn-logout" onclick="logout()">Sign Out</button>
+        </div>
+    </aside>
+
+    <main class="main-content">
+        <div class="page-header">
+            <div class="page-header-text">
+                <h1>My Results</h1>
+                <p>View released exam results and grades</p>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="table-wrapper">
+                <table>
+                    <thead>
+                        <tr><th>Exam</th><th>Module</th><th>Score</th><th>Percentage</th><th>Grade</th><th>Status</th></tr>
+                    </thead>
+                    <tbody id="resultsTbody">
+                        <tr><td colspan="6"><div class="loading">Loading results...</div></td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="alert alert-info" style="margin-top:8px">
+            Results are only visible after your lecturer releases them. Check back later if no results are shown.
+        </div>
+    </main>
+</div>
+<div id="toast"></div>
+<script src="/js/auth.js"></script>
+<script src="/js/student.js"></script>
+<script>initResults();</script>
+</body>
+</html>

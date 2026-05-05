@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Modules – ExamPortal</title>
+    <link rel="stylesheet" href="/css/styles.css">
+</head>
+<body>
+<div class="layout">
+    <aside class="sidebar">
+        <div class="sidebar-logo">Exam<span>Portal</span></div>
+        <nav class="sidebar-nav">
+            <a href="/pages/student/dashboard.html">🏠 Dashboard</a>
+            <a href="/pages/student/modules.html" class="active">📚 Modules</a>
+            <a href="/pages/student/exams.html">📝 My Exams</a>
+            <a href="/pages/student/results.html">📊 My Results</a>
+        </nav>
+        <div class="sidebar-bottom">
+            <div class="sidebar-user" id="sidebarUser"></div>
+            <button class="btn-logout" onclick="logout()">Sign Out</button>
+        </div>
+    </aside>
+
+    <main class="main-content">
+        <div class="page-header">
+            <div class="page-header-text">
+                <h1>Modules</h1>
+                <p>Browse the module catalogue and enroll using your enrollment key</p>
+            </div>
+        </div>
+
+        <!-- Browse Section -->
+        <div class="card">
+            <div class="card-header"><h2>Browse Module Catalogue</h2></div>
+
+            <div style="margin-bottom:16px">
+                <p class="text-muted" style="margin-bottom:10px">1. Select an academic year:</p>
+                <div id="yearsContainer" style="display:flex;gap:8px;flex-wrap:wrap">
+                    <div class="loading">Loading years…</div>
+                </div>
+            </div>
+
+            <div id="semestersRow" class="hidden" style="margin-bottom:16px">
+                <p class="text-muted" style="margin-bottom:10px">2. Select a semester:</p>
+                <div id="semestersContainer" style="display:flex;gap:8px;flex-wrap:wrap"></div>
+            </div>
+
+            <div id="modulesSection" class="hidden">
+                <p class="text-muted" style="margin-bottom:12px">3. Choose a module to enroll:</p>
+                <div class="table-wrapper">
+                    <table>
+                        <thead><tr><th>Code</th><th>Module Name</th><th>Lecturer</th><th>Action</th></tr></thead>
+                        <tbody id="browseModulesTbody"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Enrolled Modules -->
+        <div class="card">
+            <div class="card-header"><h2>My Enrolled Modules</h2></div>
+            <div class="table-wrapper">
+                <table>
+                    <thead><tr><th>Code</th><th>Module Name</th><th>Lecturer</th><th>Action</th></tr></thead>
+                    <tbody id="enrolledModulesTbody"><tr><td colspan="4"><div class="loading">Loading…</div></td></tr></tbody>
+                </table>
+            </div>
+        </div>
+    </main>
+</div>
+
+<!-- Enroll Modal -->
+<div class="modal-overlay hidden" id="enrollModal">
+    <div class="modal">
+        <div class="modal-header">
+            <h3>Enroll in Module</h3>
+            <button class="modal-close" onclick="closeModal('enrollModal')">✕</button>
+        </div>
+        <div class="modal-body">
+            <p style="font-size:14px;color:#64748b;margin-bottom:16px">Enter the enrollment key provided by your lecturer.</p>
+            <div class="form-group">
+                <label>Enrollment Key <span style="color:red">*</span></label>
+                <input type="text" id="enrollKey" class="form-control" placeholder="Enter enrollment key" autocomplete="off">
+            </div>
+            <div id="enrollError" class="alert alert-error hidden"></div>
+        </div>
+        <div class="modal-footer">
+            <button class="btn btn-secondary" onclick="closeModal('enrollModal')">Cancel</button>
+            <button class="btn btn-primary" onclick="submitEnroll()">Enroll</button>
+        </div>
+    </div>
+</div>
+
+<div id="toast"></div>
+<script src="/js/auth.js"></script>
+<script src="/js/student.js"></script>
+<script>initModules();</script>
+</body>
+</html>

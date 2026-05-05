@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Modules – ExamPortal</title>
+    <link rel="stylesheet" href="/css/styles.css">
+</head>
+<body>
+<div class="layout">
+    <aside class="sidebar">
+        <div class="sidebar-logo">Exam<span>Portal</span></div>
+        <nav class="sidebar-nav">
+            <a href="/pages/admin/dashboard.html">🏠 Dashboard</a>
+            <a href="/pages/admin/modules.html" class="active">📚 Modules</a>
+            <a href="/pages/admin/users.html">👥 Users</a>
+        </nav>
+        <div class="sidebar-bottom">
+            <div class="sidebar-user" id="sidebarUser"></div>
+            <button class="btn-logout" onclick="logout()">Sign Out</button>
+        </div>
+    </aside>
+
+    <main class="main-content">
+        <div class="page-header">
+            <div class="page-header-text">
+                <h1>Modules</h1>
+                <p>Create modules and assign lecturers</p>
+            </div>
+            <button class="btn btn-primary" onclick="showCreateModuleModal()">+ Create Module</button>
+        </div>
+
+        <div class="filter-bar">
+            <label>Year:</label>
+            <select id="modYearSelect" class="form-control" onchange="onModYearChange()">
+                <option value="">-- Select Year --</option>
+            </select>
+            <label>Semester:</label>
+            <select id="modSemSelect" class="form-control" onchange="onModSemChange()">
+                <option value="">-- Select Semester --</option>
+            </select>
+        </div>
+
+        <div class="card">
+            <div class="table-wrapper">
+                <table>
+                    <thead>
+                        <tr><th>Code</th><th>Module Name</th><th>Lecturer</th><th>Enrollment Key</th><th>Actions</th></tr>
+                    </thead>
+                    <tbody id="modulesTbody">
+                        <tr><td colspan="5" class="text-center text-muted" style="padding:32px">Select year and semester to view modules.</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </main>
+</div>
+
+<!-- Create Module Modal -->
+<div class="modal-overlay hidden" id="moduleModal">
+    <div class="modal modal-lg">
+        <div class="modal-header">
+            <h3>Create Module</h3>
+            <button class="modal-close" onclick="closeModal('moduleModal')">✕</button>
+        </div>
+        <form id="moduleForm" onsubmit="event.preventDefault();saveModule()">
+            <div class="modal-body">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Module Name <span style="color:red">*</span></label>
+                        <input type="text" id="modName" class="form-control" placeholder="e.g. Introduction to Programming" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Module Code <span style="color:red">*</span></label>
+                        <input type="text" id="modCode" class="form-control" placeholder="e.g. CS101" required>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Description</label>
+                    <textarea id="modDesc" class="form-control" rows="2" placeholder="Optional description"></textarea>
+                </div>
+                <div class="form-group">
+                    <label>Enrollment Key <span style="color:red">*</span></label>
+                    <input type="text" id="modKey" class="form-control" placeholder="Secret key students use to enroll" required>
+                    <span class="form-hint">Share this with students. Case-sensitive.</span>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" onclick="closeModal('moduleModal')">Cancel</button>
+                <button type="submit" class="btn btn-primary">Create Module</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Assign Lecturer Modal -->
+<div class="modal-overlay hidden" id="assignModal">
+    <div class="modal">
+        <div class="modal-header">
+            <h3>Assign Lecturer</h3>
+            <button class="modal-close" onclick="closeModal('assignModal')">✕</button>
+        </div>
+        <div class="modal-body">
+            <div class="form-group">
+                <label>Select Lecturer</label>
+                <select id="lecturerSelect" class="form-control">
+                    <option value="">-- Select Lecturer --</option>
+                </select>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button class="btn btn-secondary" onclick="closeModal('assignModal')">Cancel</button>
+            <button class="btn btn-primary" onclick="assignLecturer()">Assign</button>
+        </div>
+    </div>
+</div>
+
+<!-- Remove Lecturer Modal -->
+<div class="modal-overlay hidden" id="removeLecturerModal">
+    <div class="modal">
+        <div class="modal-header">
+            <h3>Remove Lecturer</h3>
+            <button class="modal-close" onclick="closeModal('removeLecturerModal')">✕</button>
+        </div>
+        <div class="modal-body">
+            <div id="removeLecturerList"></div>
+        </div>
+        <div class="modal-footer">
+            <button class="btn btn-secondary" onclick="closeModal('removeLecturerModal')">Close</button>
+        </div>
+    </div>
+</div>
+
+<div id="toast"></div>
+<script src="/js/auth.js"></script>
+<script src="/js/admin.js"></script>
+<script>initModules();</script>
+</body>
+</html>

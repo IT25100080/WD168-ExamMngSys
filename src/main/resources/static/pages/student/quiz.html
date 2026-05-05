@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quiz – ExamPortal</title>
+    <link rel="stylesheet" href="/css/styles.css">
+</head>
+<body class="quiz-body">
+<div class="quiz-shell">
+    <!-- Top Bar -->
+    <div class="quiz-topbar">
+        <div>
+            <div class="exam-info" id="examTitle">Loading exam...</div>
+            <div class="exam-module" id="moduleTitle"></div>
+        </div>
+        <div id="timer" class="quiz-timer normal">00:00:00</div>
+    </div>
+
+    <!-- Main Quiz Content -->
+    <div id="quizContent">
+        <div class="quiz-content">
+            <!-- Question Panel -->
+            <div class="quiz-question-card">
+                <div class="question-header">
+                    <span id="questionMeta">Question — of —</span>
+                    <span class="question-marks" id="marksLabel"></span>
+                </div>
+                <div class="question-text" id="questionText">Loading question...</div>
+                <div id="answerArea">
+                    <div class="loading">Loading options...</div>
+                </div>
+                <div class="quiz-nav-row">
+                    <button class="btn btn-secondary" id="prevBtn" onclick="goPrevious()" disabled>← Previous</button>
+                    <span id="questionProgress" style="color:#64748b;font-size:14px">— / —</span>
+                    <button class="btn btn-secondary" id="nextBtn" onclick="goNext()">Next →</button>
+                </div>
+                <div style="text-align:center;margin-top:20px;padding-top:16px;border-top:1px solid #f1f5f9">
+                    <button class="btn btn-danger" onclick="confirmSubmit()">Submit Exam</button>
+                </div>
+            </div>
+
+            <!-- Sidebar -->
+            <div class="quiz-sidebar-area">
+                <!-- Progress -->
+                <div class="grid-card">
+                    <h3>Progress</h3>
+                    <p style="font-size:14px;color:#374151">
+                        Answered: <strong id="answeredCount">0</strong> of <strong id="totalQCount">—</strong>
+                    </p>
+                </div>
+
+                <!-- Navigation Grid -->
+                <div class="grid-card">
+                    <h3>Navigation</h3>
+                    <div class="question-grid" id="questionGrid">
+                        <!-- populated by JS -->
+                    </div>
+                </div>
+
+                <!-- Legend -->
+                <div class="grid-card">
+                    <h3>Legend</h3>
+                    <div class="legend">
+                        <div class="legend-item"><div class="legend-dot current"></div> Current question</div>
+                        <div class="legend-item"><div class="legend-dot answered"></div> Answered</div>
+                        <div class="legend-item"><div class="legend-dot unanswered"></div> Unanswered</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div id="toast"></div>
+<script src="/js/auth.js"></script>
+<script src="/js/quiz.js"></script>
+<script>
+    // Sync totalQCount after questions load
+    const _origBuildGrid = buildGrid;
+    buildGrid = function() {
+        _origBuildGrid();
+        const el = document.getElementById('totalQCount');
+        if (el) el.textContent = questions.length;
+    };
+    initQuiz();
+</script>
+</body>
+</html>

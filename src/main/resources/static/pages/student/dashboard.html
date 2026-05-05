@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Student Dashboard – ExamPortal</title>
+    <link rel="stylesheet" href="/css/styles.css">
+</head>
+<body>
+<div class="layout">
+    <aside class="sidebar">
+        <div class="sidebar-logo">Exam<span>Portal</span></div>
+        <nav class="sidebar-nav">
+            <a href="/pages/student/dashboard.html" class="active">🏠 Dashboard</a>
+            <a href="/pages/student/modules.html">📚 Modules</a>
+            <a href="/pages/student/exams.html">📝 My Exams</a>
+            <a href="/pages/student/results.html">📊 My Results</a>
+        </nav>
+        <div class="sidebar-bottom">
+            <div class="sidebar-user" id="sidebarUser"></div>
+            <button class="btn-logout" onclick="logout()">Sign Out</button>
+        </div>
+    </aside>
+
+    <main class="main-content">
+        <div class="page-header">
+            <div class="page-header-text">
+                <h1>Welcome back!</h1>
+                <p>Here's an overview of your enrolled modules.</p>
+            </div>
+        </div>
+
+        <div class="stats-grid">
+            <div class="stat-card green">
+                <div class="stat-value" id="statEnrolled">—</div>
+                <div class="stat-label">Enrolled Modules</div>
+            </div>
+            <div class="stat-card purple">
+                <div class="stat-value" id="statResults">—</div>
+                <div class="stat-label">Results Released</div>
+            </div>
+        </div>
+
+        <div style="display:flex;gap:12px;margin-bottom:24px;flex-wrap:wrap">
+            <a href="/pages/student/modules.html" class="btn btn-primary">📚 Browse &amp; Enroll Modules</a>
+            <a href="/pages/student/exams.html" class="btn btn-secondary">📝 View Exams</a>
+            <a href="/pages/student/results.html" class="btn btn-secondary">📊 View Results</a>
+        </div>
+
+        <div class="card">
+            <div class="card-header"><h2>Enrolled Modules</h2></div>
+            <div class="table-wrapper">
+                <table>
+                    <thead><tr><th>Code</th><th>Module</th><th>Lecturer</th><th></th></tr></thead>
+                    <tbody id="enrolledTbody"><tr><td colspan="4"><div class="loading">Loading…</div></td></tr></tbody>
+                </table>
+            </div>
+        </div>
+    </main>
+</div>
+<div id="toast"></div>
+<script src="/js/auth.js"></script>
+<script src="/js/student.js"></script>
+<script>initDashboard();</script>
+</body>
+</html>

@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Exams &amp; Questions – ExamPortal</title>
+    <link rel="stylesheet" href="/css/styles.css">
+</head>
+<body>
+<div class="layout">
+    <aside class="sidebar">
+        <div class="sidebar-logo">Exam<span>Portal</span></div>
+        <nav class="sidebar-nav">
+            <a href="/pages/lecturer/dashboard.html">🏠 Dashboard</a>
+            <a href="/pages/lecturer/exams.html" class="active">📝 Exams &amp; Questions</a>
+            <a href="/pages/lecturer/results.html">📊 Results &amp; Grading</a>
+        </nav>
+        <div class="sidebar-bottom">
+            <div class="sidebar-user" id="sidebarUser"></div>
+            <button class="btn-logout" onclick="logout()">Sign Out</button>
+        </div>
+    </aside>
+
+    <main class="main-content">
+        <div class="page-header">
+            <div class="page-header-text">
+                <h1>Exams &amp; Questions</h1>
+                <p>Select a module to manage its exams and questions</p>
+            </div>
+        </div>
+
+        <div class="module-tabs" id="moduleTabs">
+            <div class="loading">Loading modules…</div>
+        </div>
+
+        <div id="examsContainer"></div>
+    </main>
+</div>
+
+<!-- Exam Modal (Create / Edit) -->
+<div class="modal-overlay hidden" id="examModal">
+    <div class="modal modal-lg">
+        <div class="modal-header">
+            <h3 id="examModalTitle">Create Exam</h3>
+            <button class="modal-close" onclick="closeModal('examModal')">✕</button>
+        </div>
+        <form id="examForm" onsubmit="event.preventDefault();saveExam()">
+            <div class="modal-body">
+                <div class="form-group">
+                    <label>Module <span style="color:red">*</span></label>
+                    <select id="examModuleId" class="form-control" required></select>
+                </div>
+                <div class="form-group">
+                    <label>Exam Title <span style="color:red">*</span></label>
+                    <input type="text" id="examTitle" class="form-control" placeholder="e.g. Midterm Exam" required>
+                </div>
+                <div class="form-group">
+                    <label>Description</label>
+                    <textarea id="examDesc" class="form-control" rows="2" placeholder="Optional instructions for students"></textarea>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Duration (minutes) <span style="color:red">*</span></label>
+                        <input type="number" id="examDuration" class="form-control" min="1" placeholder="e.g. 60" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Access Password <span style="color:red">*</span></label>
+                        <input type="text" id="examPassword" class="form-control" placeholder="Students enter this to begin" required>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Start Time</label>
+                        <input type="datetime-local" id="examStart" class="form-control">
+                    </div>
+                    <div class="form-group">
+                        <label>End Time</label>
+                        <input type="datetime-local" id="examEnd" class="form-control">
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Status</label>
+                        <select id="examStatus" class="form-control">
+                            <option value="DRAFT">Draft</option>
+                            <option value="ACTIVE">Active</option>
+                            <option value="CLOSED">Closed</option>
+                        </select>
+                        <span class="form-hint">Set to "Active" to make exam visible and accessible to students.</span>
+                    </div>
+                    <div class="form-group">
+                        <label>Max Attempts <span style="color:red">*</span></label>
+                        <input type="number" id="examMaxAttempts" class="form-control" min="1" value="1" required>
+                        <span class="form-hint">How many times each student can attempt this exam.</span>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" onclick="closeModal('examModal')">Cancel</button>
+                <button type="submit" class="btn btn-primary">Save Exam</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Question Modal -->
+<div class="modal-overlay hidden" id="questionModal">
+    <div class="modal modal-lg">
+        <div class="modal-header">
+            <h3 id="questionModalTitle">Add Question</h3>
+            <button class="modal-close" onclick="closeModal('questionModal')">✕</button>
+        </div>
+        <form id="questionForm" onsubmit="event.preventDefault();saveQuestion()">
+            <div class="modal-body">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Question Type <span style="color:red">*</span></label>
+                        <select id="qType" class="form-control" onchange="onQuestionTypeChange()" required>
+                            <option value="">-- Select Type --</option>
+                            <option value="MCQ">MCQ (Single choice)</option>
+                            <option value="TRUE_FALSE">True / False</option>
+                            <option value="MULTI_SELECT">Multi-Select</option>
+                            <option value="SHORT_ANSWER">Short Answer</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Marks <span style="color:red">*</span></label>
+                        <input type="number" id="qMarks" class="form-control" value="1" min="1" required>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Question Text <span style="color:red">*</span></label>
+                    <textarea id="qText" class="form-control" rows="3" placeholder="Enter the question here…" required></textarea>
+                </div>
+                <div id="optionsSection" class="hidden">
+                    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+                        <label style="margin:0">Answer Options <span style="color:red">*</span></label>
+                        <span class="text-muted" style="font-size:12px">Check the box(es) to mark correct answer(s)</span>
+                    </div>
+                    <div class="options-editor">
+                        <div id="optionRows"></div>
+                        <button type="button" class="add-option-btn" id="addOptionBtn" onclick="addOption()">+ Add Option</button>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" onclick="closeModal('questionModal')">Cancel</button>
+                <button type="submit" class="btn btn-primary">Save Question</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div id="toast"></div>
+<script src="/js/auth.js"></script>
+<script src="/js/lecturer.js"></script>
+<script>initExams();</script>
+</body>
+</html>

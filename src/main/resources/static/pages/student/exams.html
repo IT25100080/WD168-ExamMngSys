@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Exams – ExamPortal</title>
+    <link rel="stylesheet" href="/css/styles.css">
+</head>
+<body>
+<div class="layout">
+    <aside class="sidebar">
+        <div class="sidebar-logo">Exam<span>Portal</span></div>
+        <nav class="sidebar-nav">
+            <a href="/pages/student/dashboard.html">🏠 Dashboard</a>
+            <a href="/pages/student/modules.html">📚 Modules</a>
+            <a href="/pages/student/exams.html" class="active">📝 My Exams</a>
+            <a href="/pages/student/results.html">📊 My Results</a>
+        </nav>
+        <div class="sidebar-bottom">
+            <div class="sidebar-user" id="sidebarUser"></div>
+            <button class="btn-logout" onclick="logout()">Sign Out</button>
+        </div>
+    </aside>
+
+    <main class="main-content">
+        <div class="page-header">
+            <div class="page-header-text">
+                <h1>My Exams</h1>
+                <p>View and enter exams for your enrolled modules</p>
+            </div>
+        </div>
+
+        <div class="filter-bar">
+            <label>Module:</label>
+            <select id="moduleSelector" class="form-control" onchange="onModuleChange()" style="max-width:320px">
+                <option value="">-- All Enrolled Modules --</option>
+            </select>
+        </div>
+
+        <div class="card">
+            <div class="table-wrapper">
+                <table>
+                    <thead>
+                        <tr><th>Exam Title</th><th>Module</th><th>Duration</th><th>Attempts</th><th>Status</th><th>Start Time</th><th>Action</th></tr>
+                    </thead>
+                    <tbody id="examsTbody">
+                        <tr><td colspan="7"><div class="loading">Loading...</div></td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </main>
+</div>
+
+<!-- Exam Access Modal -->
+<div class="modal-overlay hidden" id="accessModal">
+    <div class="modal">
+        <div class="modal-header">
+            <h3>Enter Exam Password</h3>
+            <button class="modal-close" onclick="closeModal('accessModal')">✕</button>
+        </div>
+        <div class="modal-body">
+            <p style="font-size:14px;color:#64748b;margin-bottom:16px">
+                ⚠️ Once you enter the exam, the timer will start immediately.<br>
+                Check the <strong>Attempts</strong> column for how many tries you have.
+            </p>
+            <div class="form-group">
+                <label>Exam Password</label>
+                <input type="password" id="examPassword" class="form-control" placeholder="Enter exam password" autocomplete="off">
+            </div>
+            <div id="accessError" class="alert alert-error hidden"></div>
+        </div>
+        <div class="modal-footer">
+            <button class="btn btn-secondary" onclick="closeModal('accessModal')">Cancel</button>
+            <button class="btn btn-primary" onclick="submitAccess()">Start Exam</button>
+        </div>
+    </div>
+</div>
+
+<div id="toast"></div>
+<script src="/js/auth.js"></script>
+<script src="/js/student.js"></script>
+<script>initExams();</script>
+</body>
+</html>
