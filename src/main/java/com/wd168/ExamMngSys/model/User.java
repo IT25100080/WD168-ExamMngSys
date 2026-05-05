@@ -1,4 +1,4 @@
-package com.example.WD168_ExmMngSys.model;
+package com.wd168.ExamMngSys.model;
 
 import jakarta.persistence.*;
 import lombok.Getter;

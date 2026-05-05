@@ -1,7 +1,18 @@
-package com.example.WD168_ExmMngSys.service;
+package com.wd168.ExamMngSys.service;
 
-import com.wd168.ExamMngSys.model.*;
-import com.wd168.ExamMngSys.repository.*;
+import com.wd168.ExamMngSys.model.AcademicYear;
+import com.wd168.ExamMngSys.model.ExamAttempt;
+import com.wd168.ExamMngSys.model.Module;
+import com.wd168.ExamMngSys.model.Semester;
+import com.wd168.ExamMngSys.model.StudentModule;
+import com.wd168.ExamMngSys.model.User;
+import com.wd168.ExamMngSys.repository.AcademicYearRepository;
+import com.wd168.ExamMngSys.repository.ExamAttemptRepository;
+import com.wd168.ExamMngSys.repository.ModuleRepository;
+import com.wd168.ExamMngSys.repository.SemesterRepository;
+import com.wd168.ExamMngSys.repository.StudentAnswerRepository;
+import com.wd168.ExamMngSys.repository.StudentModuleRepository;
+import com.wd168.ExamMngSys.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -10,6 +21,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
+
 
 @Service
 @RequiredArgsConstructor

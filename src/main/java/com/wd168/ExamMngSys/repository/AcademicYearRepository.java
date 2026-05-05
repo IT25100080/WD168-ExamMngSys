@@ -1,4 +1,4 @@
-package com.example.WD168_ExmMngSys.repository;
+package com.wd168.ExamMngSys.repository;
 
 import com.wd168.ExamMngSys.model.AcademicYear;
 import org.springframework.data.jpa.repository.JpaRepository;

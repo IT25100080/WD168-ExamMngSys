@@ -1,4 +1,4 @@
-package com.example.WD168_ExmMngSys.config;
+package com.wd168.ExamMngSys.config;
 
 import com.wd168.ExamMngSys.model.AcademicYear;
 import com.wd168.ExamMngSys.model.Semester;

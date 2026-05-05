@@ -1,4 +1,4 @@
-package com.example.WD168_ExmMngSys;
+package com.wd168.ExamMngSys;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;

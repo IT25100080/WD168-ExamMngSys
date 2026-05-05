@@ -1,4 +1,4 @@
-package com.example.WD168_ExmMngSys.dto;
+package com.wd168.ExamMngSys.dto;
 
 import lombok.Data;
 

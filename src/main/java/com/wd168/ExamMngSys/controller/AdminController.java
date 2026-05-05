@@ -1,4 +1,4 @@
-package com.example.WD168_ExmMngSys.controller;
+package com.wd168.ExamMngSys.controller;
 
 import com.wd168.ExamMngSys.model.User;
 import com.wd168.ExamMngSys.service.AdminService;
