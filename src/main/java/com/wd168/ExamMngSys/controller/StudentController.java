@@ -1,5 +1,5 @@
 package com.wd168.ExamMngSys.controller;
-
+// This is a student controller
 import com.wd168.ExamMngSys.dto.EnrollRequest;
 import com.wd168.ExamMngSys.dto.ExamAccessRequest;
 import com.wd168.ExamMngSys.service.StudentService;
