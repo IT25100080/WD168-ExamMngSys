@@ -30,6 +30,9 @@ public class User {
     @Column(nullable = false, length = 255)
     private String password;
 
+    @Column(name = "password_reset_required")
+    private Boolean passwordResetRequired = false;
+
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private Role role;

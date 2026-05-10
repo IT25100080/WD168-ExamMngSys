@@ -48,7 +48,8 @@ public class AuthController {
             "id", user.getId(),
             "username", user.getUsername(),
             "fullName", user.getFullName() != null ? user.getFullName() : "",
-            "role", user.getRole().name()
+            "role", user.getRole().name(),
+            "passwordResetRequired", Boolean.TRUE.equals(user.getPasswordResetRequired())
         ));
     }
 
@@ -80,6 +81,7 @@ public class AuthController {
         }
         String tempPassword = generateTempPassword();
         user.setPassword(passwordEncoder.encode(tempPassword));
+        user.setPasswordResetRequired(true);
         userRepository.save(user);
         emailService.sendTemporaryPassword(user.getEmail(), user.getUsername(), tempPassword);
         return ResponseEntity.ok(Map.of("message", "A temporary password has been sent to your registered email address. Please check your inbox and log in."));

@@ -43,4 +43,21 @@ public class UserController {
         userRepository.save(user);
         return ResponseEntity.ok(Map.of("message", "Password changed successfully"));
     }
+
+    @PutMapping("/force-change-password")
+    public ResponseEntity<?> forceChangePassword(@RequestBody Map<String, Object> body, Authentication authentication) {
+        String newPassword = (String) body.get("newPassword");
+        if (newPassword == null || newPassword.isBlank()) {
+            return ResponseEntity.badRequest().body(Map.of("error", "New password is required"));
+        }
+        User user = userRepository.findByUsername(authentication.getName())
+            .orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED, "User not found"));
+        if (!Boolean.TRUE.equals(user.getPasswordResetRequired())) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(Map.of("error", "No forced password change required"));
+        }
+        user.setPassword(passwordEncoder.encode(newPassword));
+        user.setPasswordResetRequired(false);
+        userRepository.save(user);
+        return ResponseEntity.ok(Map.of("message", "Password changed successfully"));
+    }
 }

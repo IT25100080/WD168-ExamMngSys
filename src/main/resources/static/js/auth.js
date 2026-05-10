@@ -37,6 +37,10 @@ function populateSidebarUser() {
             sidebarBottom.insertBefore(btn, sidebarBottom.querySelector('.btn-logout'));
         }
     }
+
+    if (user.passwordResetRequired) {
+        showForceChangePwdModal(() => {});
+    }
 }
 
 function _injectChangePwdModal() {
@@ -141,6 +145,79 @@ function openModal(id) { document.getElementById(id).classList.remove('hidden');
 function closeModal(id) { document.getElementById(id).classList.add('hidden'); }
 
 /* ========================================
+   FORCED PASSWORD CHANGE
+   ======================================== */
+function showForceChangePwdModal(afterChange) {
+    _injectForceChangePwdModal();
+    window._fcpAfterChange = afterChange;
+    document.getElementById('forceChangePwdForm').reset();
+    const alert = document.getElementById('fcpAlert');
+    if (alert) alert.classList.add('hidden');
+    openModal('forceChangePwdModal');
+}
+
+function _injectForceChangePwdModal() {
+    if (document.getElementById('forceChangePwdModal')) return;
+    const tpl = document.createElement('div');
+    tpl.innerHTML = `
+        <div class="modal-overlay" id="forceChangePwdModal" style="z-index:9999">
+            <div class="modal">
+                <div class="modal-header">
+                    <h3>Set New Password</h3>
+                </div>
+                <form id="forceChangePwdForm" onsubmit="event.preventDefault();submitForceChangePassword()">
+                    <div class="modal-body">
+                        <p style="font-size:14px;color:#64748b;margin-bottom:16px">
+                            Your account is using a temporary password. Please set a new password before continuing.
+                        </p>
+                        <div class="form-group">
+                            <label>New Password <span style="color:red">*</span></label>
+                            <input type="password" id="fcpNewPwd" class="form-control" placeholder="Enter new password" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Confirm New Password <span style="color:red">*</span></label>
+                            <input type="password" id="fcpConfirmPwd" class="form-control" placeholder="Confirm new password" required>
+                        </div>
+                        <div id="fcpAlert" class="alert hidden" style="margin-top:12px"></div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="submit" class="btn btn-primary">Set New Password</button>
+                    </div>
+                </form>
+            </div>
+        </div>`;
+    document.body.appendChild(tpl.firstElementChild);
+}
+
+async function submitForceChangePassword() {
+    const newPassword     = document.getElementById('fcpNewPwd').value;
+    const confirmPassword = document.getElementById('fcpConfirmPwd').value;
+    if (newPassword !== confirmPassword) { _showFcpAlert('Passwords do not match.'); return; }
+    if (newPassword.length < 6) { _showFcpAlert('Password must be at least 6 characters.'); return; }
+    const res = await apiFetch('/api/user/force-change-password', {
+        method: 'PUT', body: JSON.stringify({ newPassword })
+    });
+    if (!res) return;
+    if (res.ok) {
+        const u = getUser();
+        if (u) { u.passwordResetRequired = false; localStorage.setItem('user', JSON.stringify(u)); }
+        closeModal('forceChangePwdModal');
+        if (window._fcpAfterChange) window._fcpAfterChange();
+    } else {
+        const d = await res.json();
+        _showFcpAlert(d.error || 'Failed to change password.');
+    }
+}
+
+function _showFcpAlert(msg) {
+    const el = document.getElementById('fcpAlert');
+    if (!el) return;
+    el.className = 'alert alert-error';
+    el.textContent = msg;
+    el.classList.remove('hidden');
+}
+
+/* ========================================
    LOGIN PAGE – only active on login.html
    ======================================== */
 (function initLoginPage() {
@@ -170,7 +247,11 @@ function closeModal(id) { document.getElementById(id).classList.add('hidden'); }
             if (res.ok) {
                 const data = await res.json();
                 localStorage.setItem('user', JSON.stringify(data));
-                redirectByRole(data.role);
+                if (data.passwordResetRequired) {
+                    showForceChangePwdModal(() => redirectByRole(data.role));
+                } else {
+                    redirectByRole(data.role);
+                }
             } else {
                 let msg = 'Incorrect username or password.';
                 try { const d = await res.json(); msg = d.error || d.message || msg; } catch (_) {}
