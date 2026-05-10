@@ -167,12 +167,14 @@ function closeModal(id) { document.getElementById(id).classList.add('hidden'); }
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ username, password })
             });
-            const data = await res.json();
             if (res.ok) {
+                const data = await res.json();
                 localStorage.setItem('user', JSON.stringify(data));
                 redirectByRole(data.role);
             } else {
-                showLoginAlert(data.error || data.message || 'Invalid credentials.', 'error');
+                let msg = 'Incorrect username or password.';
+                try { const d = await res.json(); msg = d.error || d.message || msg; } catch (_) {}
+                showLoginAlert(msg, 'error');
             }
         } catch (e) { showLoginAlert('Connection error. Please try again.', 'error'); }
     };

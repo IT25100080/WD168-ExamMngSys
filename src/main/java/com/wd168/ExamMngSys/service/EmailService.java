@@ -35,24 +35,27 @@ public class EmailService {
         }
     }
 
-    public void sendResetRequestConfirmation(String toEmail, String username) {
+    public boolean isEmailConfigured() {
+        return mailSender != null;
+    }
+
+    public void sendTemporaryPassword(String toEmail, String username, String tempPassword) {
         if (mailSender == null || toEmail == null || toEmail.isBlank()) return;
         try {
             SimpleMailMessage msg = new SimpleMailMessage();
             msg.setFrom(from);
             msg.setTo(toEmail);
-            msg.setSubject("ExamPortal – Password Reset Request Received");
+            msg.setSubject("ExamPortal – Your Temporary Password");
             msg.setText(
                 "Hello " + username + ",\n\n" +
-                "We received a password reset request for your ExamPortal account.\n\n" +
-                "An administrator will reset your password shortly. " +
-                "You will receive another email with your new password once it is done.\n\n" +
-                "If you did not request this, please ignore this email.\n\n" +
+                "A temporary password has been generated for your ExamPortal account.\n\n" +
+                "Your temporary password is: " + tempPassword + "\n\n" +
+                "Please log in using this password and change it immediately.\n\n" +
                 "– ExamPortal"
             );
             mailSender.send(msg);
         } catch (Exception e) {
-            System.err.println("[EmailService] Failed to send confirmation email to " + toEmail + ": " + e.getMessage());
+            System.err.println("[EmailService] Failed to send temporary password email to " + toEmail + ": " + e.getMessage());
         }
     }
 }

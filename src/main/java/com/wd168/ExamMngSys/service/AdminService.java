@@ -3,14 +3,12 @@ package com.wd168.ExamMngSys.service;
 import com.wd168.ExamMngSys.model.AcademicYear;
 import com.wd168.ExamMngSys.model.ExamAttempt;
 import com.wd168.ExamMngSys.model.Module;
-import com.wd168.ExamMngSys.model.PasswordResetRequest;
 import com.wd168.ExamMngSys.model.Semester;
 import com.wd168.ExamMngSys.model.StudentModule;
 import com.wd168.ExamMngSys.model.User;
 import com.wd168.ExamMngSys.repository.AcademicYearRepository;
 import com.wd168.ExamMngSys.repository.ExamAttemptRepository;
 import com.wd168.ExamMngSys.repository.ModuleRepository;
-import com.wd168.ExamMngSys.repository.PasswordResetRequestRepository;
 import com.wd168.ExamMngSys.repository.SemesterRepository;
 import com.wd168.ExamMngSys.repository.StudentAnswerRepository;
 import com.wd168.ExamMngSys.repository.StudentModuleRepository;
@@ -22,11 +20,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
-import java.time.LocalDateTime;
-import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
 
 
 @Service
@@ -41,7 +35,6 @@ public class AdminService {
     private final ExamAttemptRepository examAttemptRepository;
     private final StudentAnswerRepository studentAnswerRepository;
     private final PasswordEncoder passwordEncoder;
-    private final PasswordResetRequestRepository passwordResetRequestRepository;
     private final EmailService emailService;
 
     public List<AcademicYear> getAllYears() {
@@ -150,30 +143,6 @@ public class AdminService {
         user.setPassword(passwordEncoder.encode(newPassword));
         userRepository.save(user);
         emailService.sendPasswordResetNotification(user.getEmail(), user.getUsername(), newPassword);
-    }
-
-    public List<Map<String, Object>> getPendingResetRequests() {
-        return passwordResetRequestRepository
-            .findByStatusOrderByRequestedAtDesc(PasswordResetRequest.Status.PENDING)
-            .stream().map(req -> {
-                Map<String, Object> m = new LinkedHashMap<>();
-                m.put("id", req.getId());
-                m.put("requestedAt", req.getRequestedAt().toString());
-                m.put("userId", req.getUser().getId());
-                m.put("username", req.getUser().getUsername());
-                m.put("fullName", req.getUser().getFullName());
-                m.put("email", req.getUser().getEmail());
-                m.put("role", req.getUser().getRole());
-                return m;
-            }).collect(Collectors.toList());
-    }
-
-    public void resolveResetRequest(Long requestId) {
-        PasswordResetRequest req = passwordResetRequestRepository.findById(requestId)
-            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Request not found"));
-        req.setStatus(PasswordResetRequest.Status.RESOLVED);
-        req.setResolvedAt(LocalDateTime.now());
-        passwordResetRequestRepository.save(req);
     }
 
     public List<StudentModule> getStudentEnrollments(Long studentId) {

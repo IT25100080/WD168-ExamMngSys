@@ -35,53 +35,6 @@ async function initDashboard() {
             </tr>`).join('');
     }
 
-    await loadResetRequests();
-}
-
-async function loadResetRequests() {
-    const res = await apiFetch('/api/admin/password-reset-requests');
-    if (!res) return;
-    const list = await res.json();
-    renderResetRequests(list);
-}
-
-function renderResetRequests(list) {
-    const tbody = document.getElementById('resetRequestsTbody');
-    const badge = document.getElementById('resetBadge');
-    if (!tbody) return;
-
-    if (badge) {
-        if (list.length > 0) {
-            badge.textContent = `${list.length} pending`;
-            badge.style.display = 'inline-block';
-        } else {
-            badge.style.display = 'none';
-        }
-    }
-
-    if (!list.length) {
-        tbody.innerHTML = `<tr><td colspan="6" class="text-center text-muted" style="padding:24px">No pending password reset requests.</td></tr>`;
-        return;
-    }
-    tbody.innerHTML = list.map(r => `
-        <tr>
-            <td>${esc(r.fullName || '—')}</td>
-            <td>${esc(r.username)}</td>
-            <td>${esc(r.email)}</td>
-            <td><span class="badge badge-${r.role.toLowerCase()}">${r.role}</span></td>
-            <td class="text-muted" style="font-size:13px">${r.requestedAt ? new Date(r.requestedAt).toLocaleString() : '—'}</td>
-            <td><div class="actions-cell">
-                <button class="btn btn-sm btn-warning" onclick="showResetPasswordModal(${r.userId}, '${esc(r.fullName || r.username)}', ${r.id})">Reset Password</button>
-                <button class="btn btn-sm btn-secondary" onclick="dismissResetRequest(${r.id})">Dismiss</button>
-            </div></td>
-        </tr>`).join('');
-}
-
-async function dismissResetRequest(requestId) {
-    if (!confirm('Dismiss this request without resetting the password?')) return;
-    const res = await apiFetch(`/api/admin/password-reset-requests/${requestId}`, { method: 'DELETE' });
-    if (res && res.ok) { toast('Request dismissed.'); await loadResetRequests(); }
-    else toast('Failed to dismiss request.', 'error');
 }
 
 /* ============================================================
@@ -383,11 +336,9 @@ async function deleteUser(id) {
 }
 
 let resetPasswordUserId = null;
-let resetPasswordRequestId = null;
 
-function showResetPasswordModal(userId, username, requestId = null) {
+function showResetPasswordModal(userId, username) {
     resetPasswordUserId = userId;
-    resetPasswordRequestId = requestId;
     document.getElementById('resetPwdUsername').textContent = username;
     document.getElementById('resetPwdForm').reset();
     openModal('resetPwdModal');
@@ -404,10 +355,6 @@ async function doResetPassword() {
     });
     if (!res) return;
     if (res.ok) {
-        if (resetPasswordRequestId) {
-            await apiFetch(`/api/admin/password-reset-requests/${resetPasswordRequestId}`, { method: 'DELETE' });
-            await loadResetRequests();
-        }
         closeModal('resetPwdModal');
         toast('Password reset successfully.');
     } else { const d = await res.json(); toast(d.error || d.message || 'Failed to reset password.', 'error'); }

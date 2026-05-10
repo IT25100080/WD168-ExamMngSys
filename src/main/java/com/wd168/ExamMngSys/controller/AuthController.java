@@ -1,9 +1,7 @@
 package com.wd168.ExamMngSys.controller;
 
 import com.wd168.ExamMngSys.dto.LoginRequest;
-import com.wd168.ExamMngSys.model.PasswordResetRequest;
 import com.wd168.ExamMngSys.model.User;
-import com.wd168.ExamMngSys.repository.PasswordResetRequestRepository;
 import com.wd168.ExamMngSys.repository.UserRepository;
 import com.wd168.ExamMngSys.service.EmailService;
 import com.wd168.ExamMngSys.service.UserService;
@@ -22,6 +20,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.security.SecureRandom;
 import java.util.Map;
 
 @RestController
@@ -33,7 +32,6 @@ public class AuthController {
     private final UserService userService;
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
-    private final PasswordResetRequestRepository passwordResetRequestRepository;
     private final EmailService emailService;
 
     @PostMapping("/login")
@@ -71,17 +69,28 @@ public class AuthController {
         User user = userRepository.findByUsername(identifier)
             .orElseGet(() -> userRepository.findByEmail(identifier).orElse(null));
 
-        if (user == null || user.getRole() == User.Role.ADMIN) {
-            return ResponseEntity.ok(Map.of("message", "If your account exists, your request has been submitted. Please contact an administrator."));
+        if (user == null) {
+            return ResponseEntity.badRequest().body(Map.of("error", "No account found with that username or email."));
         }
-        if (passwordResetRequestRepository.findByUserIdAndStatus(user.getId(), PasswordResetRequest.Status.PENDING).isPresent()) {
-            return ResponseEntity.ok(Map.of("message", "A reset request is already pending for your account. Please contact an administrator."));
+        if (user.getRole() == User.Role.ADMIN) {
+            return ResponseEntity.badRequest().body(Map.of("error", "Admin accounts cannot request a password reset this way."));
         }
-        PasswordResetRequest req = new PasswordResetRequest();
-        req.setUser(user);
-        passwordResetRequestRepository.save(req);
-        emailService.sendResetRequestConfirmation(user.getEmail(), user.getUsername());
-        return ResponseEntity.ok(Map.of("message", "Request submitted. Please contact an administrator to receive your new password."));
+        if (!emailService.isEmailConfigured()) {
+            return ResponseEntity.status(503).body(Map.of("error", "Email is not configured. Please contact an administrator directly."));
+        }
+        String tempPassword = generateTempPassword();
+        user.setPassword(passwordEncoder.encode(tempPassword));
+        userRepository.save(user);
+        emailService.sendTemporaryPassword(user.getEmail(), user.getUsername(), tempPassword);
+        return ResponseEntity.ok(Map.of("message", "A temporary password has been sent to your registered email address. Please check your inbox and log in."));
+    }
+
+    private String generateTempPassword() {
+        String chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%";
+        SecureRandom rng = new SecureRandom();
+        StringBuilder sb = new StringBuilder(10);
+        for (int i = 0; i < 10; i++) sb.append(chars.charAt(rng.nextInt(chars.length())));
+        return sb.toString();
     }
 
     @PostMapping("/register")
