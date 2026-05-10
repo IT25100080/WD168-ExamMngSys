@@ -4,6 +4,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -15,6 +16,7 @@ public class EmailService {
     @Value("${app.mail.from:noreply@examportal.com}")
     private String from;
 
+    @Async
     public void sendPasswordResetNotification(String toEmail, String username, String newPassword) {
         if (mailSender == null || toEmail == null || toEmail.isBlank()) return;
         try {
@@ -39,6 +41,7 @@ public class EmailService {
         return mailSender != null;
     }
 
+    @Async
     public void sendTemporaryPassword(String toEmail, String username, String tempPassword) {
         if (mailSender == null || toEmail == null || toEmail.isBlank()) return;
         try {
