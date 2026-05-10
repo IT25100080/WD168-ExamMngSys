@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lecturer Dashboard – ExamPortal</title>
+    <link rel="stylesheet" href="/css/styles.css">
+</head>
+<body>
+<div class="layout">
+    <aside class="sidebar">
+        <div class="sidebar-logo">Exam<span>Portal</span></div>
+        <nav class="sidebar-nav">
+            <a href="/pages/lecturer/dashboard.html" class="active">🏠 Dashboard</a>
+            <a href="/pages/lecturer/exams.html">📝 Exams &amp; Questions</a>
+            <a href="/pages/lecturer/results.html">📊 Results &amp; Grading</a>
+        </nav>
+        <div class="sidebar-bottom">
+            <div class="sidebar-user" id="sidebarUser"></div>
+            <button class="btn-logout" onclick="logout()">Sign Out</button>
+        </div>
+    </aside>
+
+    <main class="main-content">
+        <div class="page-header">
+            <div class="page-header-text">
+                <h1>Welcome back!</h1>
+                <p>Here's a summary of your modules and exams.</p>
+            </div>
+        </div>
+
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-value" id="statModules">—</div>
+                <div class="stat-label">Assigned Modules</div>
+            </div>
+            <div class="stat-card green">
+                <div class="stat-value" id="statExams">—</div>
+                <div class="stat-label">Total Exams</div>
+            </div>
+            <div class="stat-card orange">
+                <div class="stat-value" id="statActive">—</div>
+                <div class="stat-label">Active Exams</div>
+            </div>
+            <div class="stat-card purple">
+                <div class="stat-value" id="statDraft">—</div>
+                <div class="stat-label">Draft Exams</div>
+            </div>
+        </div>
+
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:24px">
+            <div class="card">
+                <div class="card-header"><h2>My Modules</h2><a href="/pages/lecturer/exams.html" class="btn btn-sm btn-primary">Create Exam</a></div>
+                <div class="table-wrapper">
+                    <table>
+                        <thead><tr><th>Code</th><th>Module</th><th>Year</th><th>Semester</th><th></th></tr></thead>
+                        <tbody id="moduleTbody"><tr><td colspan="4"><div class="loading">Loading…</div></td></tr></tbody>
+                    </table>
+                </div>
+            </div>
+            <div class="card">
+                <div class="card-header"><h2>Recent Exams</h2><a href="/pages/lecturer/exams.html" class="btn btn-sm btn-secondary">All Exams</a></div>
+                <div class="table-wrapper">
+                    <table>
+                        <thead><tr><th>Title</th><th>Module</th><th>Status</th><th>Duration</th></tr></thead>
+                        <tbody id="examTbody"><tr><td colspan="4"><div class="loading">Loading…</div></td></tr></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </main>
+</div>
+<div id="toast"></div>
+<script src="/js/auth.js"></script>
+<script src="/js/lecturer.js"></script>
+<script>initDashboard();</script>
+</body>
+</html>

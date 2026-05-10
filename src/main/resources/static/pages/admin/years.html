@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Academic Years – ExamPortal</title>
+    <link rel="stylesheet" href="/css/styles.css">
+</head>
+<body>
+<div class="layout">
+    <aside class="sidebar">
+        <div class="sidebar-logo">Exam<span>Portal</span></div>
+        <nav class="sidebar-nav">
+            <a href="/pages/admin/dashboard.html">🏠 Dashboard</a>
+            <a href="/pages/admin/years.html" class="active">📅 Academic Years</a>
+            <a href="/pages/admin/semesters.html">📆 Semesters</a>
+            <a href="/pages/admin/modules.html">📚 Modules</a>
+            <a href="/pages/admin/users.html">👥 Users</a>
+        </nav>
+        <div class="sidebar-bottom">
+            <div class="sidebar-user" id="sidebarUser"></div>
+            <button class="btn-logout" onclick="logout()">Sign Out</button>
+        </div>
+    </aside>
+
+    <main class="main-content">
+        <div class="page-header">
+            <div class="page-header-text">
+                <h1>Academic Years</h1>
+                <p>Pre-built academic year structure (Year 1 – Year 4)</p>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="table-wrapper">
+                <table>
+                    <thead>
+                        <tr><th>Year Name</th><th>Display Order</th></tr>
+                    </thead>
+                    <tbody id="yearsTbody">
+                        <tr><td colspan="2"><div class="loading">Loading...</div></td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </main>
+</div>
+
+<div id="toast"></div>
+<script src="/js/auth.js"></script>
+<script src="/js/admin.js"></script>
+<script>initYears();</script>
+</body>
+</html>

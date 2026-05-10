@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Questions – ExamPortal</title>
+    <link rel="stylesheet" href="/css/styles.css">
+</head>
+<body>
+<div class="layout">
+    <aside class="sidebar">
+        <div class="sidebar-logo">Exam<span>Portal</span></div>
+        <nav class="sidebar-nav">
+            <a href="/pages/lecturer/dashboard.html">🏠 Dashboard</a>
+            <a href="/pages/lecturer/exams.html" class="active">📝 Exams &amp; Questions</a>
+            <a href="/pages/lecturer/results.html">📊 Results &amp; Grading</a>
+        </nav>
+        <div class="sidebar-bottom">
+            <div class="sidebar-user" id="sidebarUser"></div>
+            <button class="btn-logout" onclick="logout()">Sign Out</button>
+        </div>
+    </aside>
+
+    <main class="main-content">
+        <div class="page-header">
+            <div class="page-header-text">
+                <h1>Questions</h1>
+                <p>Manage questions for your exams</p>
+            </div>
+            <button class="btn btn-primary" onclick="showAddQuestionModal()">+ Add Question</button>
+        </div>
+
+        <div class="filter-bar">
+            <label>Exam:</label>
+            <select id="examSelector" class="form-control" onchange="onExamChange()" style="max-width:320px">
+                <option value="">-- Select Exam --</option>
+            </select>
+        </div>
+
+        <div class="card">
+            <div class="card-header">
+                <h2>Questions <span id="questionCount" style="font-weight:400;color:#64748b;font-size:14px"></span></h2>
+                <span class="text-muted">Total marks: <strong id="totalMarks">—</strong></span>
+            </div>
+            <div class="table-wrapper">
+                <table>
+                    <thead>
+                        <tr><th>#</th><th>Question</th><th>Type</th><th>Marks</th><th>Actions</th></tr>
+                    </thead>
+                    <tbody id="questionsTbody">
+                        <tr><td colspan="5" class="text-center text-muted" style="padding:40px">Select an exam above to manage its questions.</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </main>
+</div>
+
+<!-- Add Question Modal -->
+<div class="modal-overlay hidden" id="questionModal">
+    <div class="modal modal-lg">
+        <div class="modal-header">
+            <h3>Add Question</h3>
+            <button class="modal-close" onclick="closeModal('questionModal')">✕</button>
+        </div>
+        <form id="questionForm" onsubmit="event.preventDefault();saveQuestion()">
+            <div class="modal-body">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Question Type <span style="color:red">*</span></label>
+                        <select id="qType" class="form-control" onchange="onQuestionTypeChange()" required>
+                            <option value="">-- Select Type --</option>
+                            <option value="MCQ">MCQ (Single choice)</option>
+                            <option value="TRUE_FALSE">True / False</option>
+                            <option value="MULTI_SELECT">Multi-Select</option>
+                            <option value="SHORT_ANSWER">Short Answer</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Marks <span style="color:red">*</span></label>
+                        <input type="number" id="qMarks" class="form-control" value="1" min="1" required>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Question Text <span style="color:red">*</span></label>
+                    <textarea id="qText" class="form-control" rows="3" placeholder="Enter the question here…" required></textarea>
+                </div>
+
+                <!-- Answer options (hidden for SHORT_ANSWER) -->
+                <div id="optionsSection" class="hidden">
+                    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+                        <label style="margin:0">Answer Options <span style="color:red">*</span></label>
+                        <span class="text-muted" style="font-size:12px">Check the box(es) to mark correct answer(s)</span>
+                    </div>
+                    <div class="options-editor">
+                        <div id="optionRows"></div>
+                        <button type="button" class="add-option-btn" id="addOptionBtn" onclick="addOption()">+ Add Option</button>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" onclick="closeModal('questionModal')">Cancel</button>
+                <button type="submit" class="btn btn-primary">Save Question</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div id="toast"></div>
+<script src="/js/auth.js"></script>
+<script src="/js/lecturer.js"></script>
+<script>initQuestions();</script>
+</body>
+</html>

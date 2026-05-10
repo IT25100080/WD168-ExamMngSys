@@ -133,6 +133,16 @@ public class AdminService {
         userRepository.deleteById(id);
     }
 
+    public void resetUserPassword(Long userId, String newPassword) {
+        User user = userRepository.findById(userId)
+            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found"));
+        if (user.getRole() == User.Role.ADMIN) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Cannot reset admin passwords");
+        }
+        user.setPassword(passwordEncoder.encode(newPassword));
+        userRepository.save(user);
+    }
+
     public List<StudentModule> getStudentEnrollments(Long studentId) {
         return studentModuleRepository.findByStudentId(studentId);
     }

@@ -79,6 +79,16 @@ public class AdminController {
         return ResponseEntity.ok(Map.of("message", "User deleted"));
     }
 
+    @PutMapping("/users/{id}/reset-password")
+    public ResponseEntity<?> resetUserPassword(@PathVariable Long id, @RequestBody Map<String, Object> body) {
+        String newPassword = (String) body.get("newPassword");
+        if (newPassword == null || newPassword.isBlank()) {
+            return ResponseEntity.badRequest().body(Map.of("error", "New password is required"));
+        }
+        adminService.resetUserPassword(id, newPassword);
+        return ResponseEntity.ok(Map.of("message", "Password reset successfully"));
+    }
+
     @GetMapping("/students/{studentId}/enrollments")
     public ResponseEntity<?> getStudentEnrollments(@PathVariable Long studentId) {
         return ResponseEntity.ok(adminService.getStudentEnrollments(studentId));

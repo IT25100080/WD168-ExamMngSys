@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard – ExamPortal</title>
+    <link rel="stylesheet" href="/css/styles.css">
+</head>
+<body>
+<div class="layout">
+    <aside class="sidebar">
+        <div class="sidebar-logo">Exam<span>Portal</span></div>
+        <nav class="sidebar-nav">
+            <a href="/pages/admin/dashboard.html" class="active">🏠 Dashboard</a>
+            <a href="/pages/admin/modules.html">📚 Modules</a>
+            <a href="/pages/admin/users.html">👥 Users</a>
+        </nav>
+        <div class="sidebar-bottom">
+            <div class="sidebar-user" id="sidebarUser"></div>
+            <button class="btn-logout" onclick="logout()">Sign Out</button>
+        </div>
+    </aside>
+
+    <main class="main-content">
+        <div class="page-header">
+            <div class="page-header-text">
+                <h1>Dashboard</h1>
+                <p>System overview and quick actions</p>
+            </div>
+        </div>
+
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-value" id="statTotal">—</div>
+                <div class="stat-label">Total Users</div>
+            </div>
+            <div class="stat-card green">
+                <div class="stat-value" id="statStudent">—</div>
+                <div class="stat-label">Students</div>
+            </div>
+            <div class="stat-card purple">
+                <div class="stat-value" id="statLecturer">—</div>
+                <div class="stat-label">Lecturers</div>
+            </div>
+            <div class="stat-card orange">
+                <div class="stat-value" id="statAdmin">—</div>
+                <div class="stat-label">Admins</div>
+            </div>
+        </div>
+
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:16px;margin-bottom:28px">
+            <a href="/pages/admin/modules.html" class="btn btn-primary">📚 Manage Modules</a>
+            <a href="/pages/admin/users.html" class="btn btn-secondary">👥 Manage Users</a>
+        </div>
+
+        <div class="card">
+            <div class="card-header"><h2>Recent Users</h2></div>
+            <div class="table-wrapper">
+                <table>
+                    <thead><tr><th>Full Name</th><th>Username</th><th>Email</th><th>Role</th></tr></thead>
+                    <tbody id="recentUsersTbody"><tr><td colspan="4"><div class="loading">Loading...</div></td></tr></tbody>
+                </table>
+            </div>
+        </div>
+    </main>
+</div>
+<div id="toast"></div>
+<script src="/js/auth.js"></script>
+<script src="/js/admin.js"></script>
+<script>initDashboard();</script>
+</body>
+</html>

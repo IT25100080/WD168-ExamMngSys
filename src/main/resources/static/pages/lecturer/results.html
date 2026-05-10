@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Results &amp; Grading – ExamPortal</title>
+    <link rel="stylesheet" href="/css/styles.css">
+</head>
+<body>
+<div class="layout">
+    <aside class="sidebar">
+        <div class="sidebar-logo">Exam<span>Portal</span></div>
+        <nav class="sidebar-nav">
+            <a href="/pages/lecturer/dashboard.html">🏠 Dashboard</a>
+            <a href="/pages/lecturer/exams.html">📝 Exams &amp; Questions</a>
+            <a href="/pages/lecturer/results.html" class="active">📊 Results &amp; Grading</a>
+        </nav>
+        <div class="sidebar-bottom">
+            <div class="sidebar-user" id="sidebarUser"></div>
+            <button class="btn-logout" onclick="logout()">Sign Out</button>
+        </div>
+    </aside>
+
+    <main class="main-content">
+        <div class="page-header">
+            <div class="page-header-text">
+                <h1>Results &amp; Grading</h1>
+                <p>Select a module to inspect all student submissions and grade short answers</p>
+            </div>
+        </div>
+
+        <div class="filter-bar">
+            <label>Module:</label>
+            <select id="resultsModuleSel" class="form-control" onchange="onResultsModuleChange()" style="max-width:300px">
+                <option value="">-- Select Module --</option>
+            </select>
+            <label>Exam:</label>
+            <select id="resultsExamSel" class="form-control" onchange="onResultsExamChange()" style="max-width:340px" disabled>
+                <option value="">-- Select Exam --</option>
+            </select>
+        </div>
+
+        <div id="moduleResultsContainer">
+            <div class="empty-state">
+                <div class="empty-icon">📋</div>
+                <p>Select a module and exam above to view student submissions.</p>
+            </div>
+        </div>
+    </main>
+</div>
+
+<!-- Inspect Submission Modal -->
+<div id="inspectModal" class="modal-overlay hidden" onclick="if(event.target===this)closeModal('inspectModal')">
+    <div class="modal modal-xl" style="max-height:88vh;overflow-y:auto">
+        <div class="modal-header">
+            <h3 id="inspectModalTitle">Submission Details</h3>
+            <button class="modal-close" onclick="closeModal('inspectModal')">&times;</button>
+        </div>
+        <div id="inspectModalBody" class="modal-body"></div>
+    </div>
+</div>
+
+<div id="toast"></div>
+<script src="/js/auth.js"></script>
+<script src="/js/lecturer.js"></script>
+<script>initResults();</script>
+</body>
+</html>
