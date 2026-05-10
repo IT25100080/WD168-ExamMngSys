@@ -278,8 +278,21 @@ function saveCurrentShortAnswerIfNeeded() {
 function updateNavButtons() {
     const prevBtn = document.getElementById('prevBtn');
     const nextBtn = document.getElementById('nextBtn');
+    const isLast = currentIdx === questions.length - 1;
     if (prevBtn) prevBtn.disabled = currentIdx === 0;
-    if (nextBtn) nextBtn.disabled = currentIdx === questions.length - 1;
+    if (nextBtn) {
+        if (isLast) {
+            nextBtn.textContent = 'Submit Exam';
+            nextBtn.className = 'btn btn-danger';
+            nextBtn.onclick = confirmSubmit;
+            nextBtn.disabled = false;
+        } else {
+            nextBtn.textContent = 'Next →';
+            nextBtn.className = 'btn btn-secondary';
+            nextBtn.onclick = goNext;
+            nextBtn.disabled = false;
+        }
+    }
     document.getElementById('questionProgress').textContent = `${currentIdx + 1} / ${questions.length}`;
 }
 
