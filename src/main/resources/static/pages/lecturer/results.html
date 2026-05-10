@@ -5,15 +5,16 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Results &amp; Grading – ExamPortal</title>
     <link rel="stylesheet" href="/css/styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 </head>
 <body>
 <div class="layout">
     <aside class="sidebar">
         <div class="sidebar-logo">Exam<span>Portal</span></div>
         <nav class="sidebar-nav">
-            <a href="/pages/lecturer/dashboard.html">🏠 Dashboard</a>
-            <a href="/pages/lecturer/exams.html">📝 Exams &amp; Questions</a>
-            <a href="/pages/lecturer/results.html" class="active">📊 Results &amp; Grading</a>
+            <a href="/pages/lecturer/dashboard.html"><i class="fas fa-house"></i> Dashboard</a>
+            <a href="/pages/lecturer/exams.html"><i class="fas fa-file-pen"></i> Exams &amp; Questions</a>
+            <a href="/pages/lecturer/results.html" class="active"><i class="fas fa-chart-bar"></i> Results &amp; Grading</a>
         </nav>
         <div class="sidebar-bottom">
             <div class="sidebar-user" id="sidebarUser"></div>
@@ -42,7 +43,7 @@
 
         <div id="moduleResultsContainer">
             <div class="empty-state">
-                <div class="empty-icon">📋</div>
+                <div class="empty-icon"><i class="fas fa-clipboard-list fa-3x"></i></div>
                 <p>Select a module and exam above to view student submissions.</p>
             </div>
         </div>
@@ -54,7 +55,7 @@
     <div class="modal modal-xl" style="max-height:88vh;overflow-y:auto">
         <div class="modal-header">
             <h3 id="inspectModalTitle">Submission Details</h3>
-            <button class="modal-close" onclick="closeModal('inspectModal')">&times;</button>
+            <button class="modal-close" onclick="closeModal('inspectModal')"><i class="fas fa-xmark"></i></button>
         </div>
         <div id="inspectModalBody" class="modal-body"></div>
     </div>

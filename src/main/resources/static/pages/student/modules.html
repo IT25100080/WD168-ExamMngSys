@@ -5,16 +5,17 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Modules – ExamPortal</title>
     <link rel="stylesheet" href="/css/styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 </head>
 <body>
 <div class="layout">
     <aside class="sidebar">
         <div class="sidebar-logo">Exam<span>Portal</span></div>
         <nav class="sidebar-nav">
-            <a href="/pages/student/dashboard.html">🏠 Dashboard</a>
-            <a href="/pages/student/modules.html" class="active">📚 Modules</a>
-            <a href="/pages/student/exams.html">📝 My Exams</a>
-            <a href="/pages/student/results.html">📊 My Results</a>
+            <a href="/pages/student/dashboard.html"><i class="fas fa-house"></i> Dashboard</a>
+            <a href="/pages/student/modules.html" class="active"><i class="fas fa-book"></i> Modules</a>
+            <a href="/pages/student/exams.html"><i class="fas fa-file-pen"></i> My Exams</a>
+            <a href="/pages/student/results.html"><i class="fas fa-chart-bar"></i> My Results</a>
         </nav>
         <div class="sidebar-bottom">
             <div class="sidebar-user" id="sidebarUser"></div>
@@ -75,7 +76,7 @@
     <div class="modal">
         <div class="modal-header">
             <h3>Enroll in Module</h3>
-            <button class="modal-close" onclick="closeModal('enrollModal')">✕</button>
+            <button class="modal-close" onclick="closeModal('enrollModal')"><i class="fas fa-xmark"></i></button>
         </div>
         <div class="modal-body">
             <p style="font-size:14px;color:#64748b;margin-bottom:16px">Enter the enrollment key provided by your lecturer.</p>

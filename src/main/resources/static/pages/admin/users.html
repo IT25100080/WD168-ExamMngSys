@@ -5,15 +5,16 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Users – ExamPortal</title>
     <link rel="stylesheet" href="/css/styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 </head>
 <body>
 <div class="layout">
     <aside class="sidebar">
         <div class="sidebar-logo">Exam<span>Portal</span></div>
         <nav class="sidebar-nav">
-            <a href="/pages/admin/dashboard.html">🏠 Dashboard</a>
-            <a href="/pages/admin/modules.html">📚 Modules</a>
-            <a href="/pages/admin/users.html" class="active">👥 Users</a>
+            <a href="/pages/admin/dashboard.html"><i class="fas fa-house"></i> Dashboard</a>
+            <a href="/pages/admin/modules.html"><i class="fas fa-book"></i> Modules</a>
+            <a href="/pages/admin/users.html" class="active"><i class="fas fa-users"></i> Users</a>
         </nav>
         <div class="sidebar-bottom">
             <div class="sidebar-user" id="sidebarUser"></div>
@@ -60,7 +61,7 @@
     <div class="modal">
         <div class="modal-header">
             <h3>Create User</h3>
-            <button class="modal-close" onclick="closeModal('userModal')">✕</button>
+            <button class="modal-close" onclick="closeModal('userModal')"><i class="fas fa-xmark"></i></button>
         </div>
         <form id="userForm" onsubmit="event.preventDefault();saveUser()">
             <div class="modal-body">
@@ -105,7 +106,7 @@
     <div class="modal modal-lg">
         <div class="modal-header">
             <h3>Module Enrollments — <span id="enrollmentsStudentName"></span></h3>
-            <button class="modal-close" onclick="closeModal('enrollmentsModal')">✕</button>
+            <button class="modal-close" onclick="closeModal('enrollmentsModal')"><i class="fas fa-xmark"></i></button>
         </div>
         <div class="modal-body">
             <div id="enrollmentsList"></div>
@@ -121,7 +122,7 @@
     <div class="modal">
         <div class="modal-header">
             <h3>Reset Password — <span id="resetPwdUsername"></span></h3>
-            <button class="modal-close" onclick="closeModal('resetPwdModal')">✕</button>
+            <button class="modal-close" onclick="closeModal('resetPwdModal')"><i class="fas fa-xmark"></i></button>
         </div>
         <form id="resetPwdForm" onsubmit="event.preventDefault();doResetPassword()">
             <div class="modal-body">

@@ -47,7 +47,7 @@ function _injectChangePwdModal() {
             <div class="modal">
                 <div class="modal-header">
                     <h3>Change Password</h3>
-                    <button class="modal-close" onclick="closeModal('changePwdModal')">✕</button>
+                    <button class="modal-close" onclick="closeModal('changePwdModal')"><i class="fas fa-xmark"></i></button>
                 </div>
                 <form id="changePwdForm" onsubmit="event.preventDefault();submitChangePassword()">
                     <div class="modal-body">

@@ -5,15 +5,16 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Questions – ExamPortal</title>
     <link rel="stylesheet" href="/css/styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 </head>
 <body>
 <div class="layout">
     <aside class="sidebar">
         <div class="sidebar-logo">Exam<span>Portal</span></div>
         <nav class="sidebar-nav">
-            <a href="/pages/lecturer/dashboard.html">🏠 Dashboard</a>
-            <a href="/pages/lecturer/exams.html" class="active">📝 Exams &amp; Questions</a>
-            <a href="/pages/lecturer/results.html">📊 Results &amp; Grading</a>
+            <a href="/pages/lecturer/dashboard.html"><i class="fas fa-house"></i> Dashboard</a>
+            <a href="/pages/lecturer/exams.html" class="active"><i class="fas fa-file-pen"></i> Exams &amp; Questions</a>
+            <a href="/pages/lecturer/results.html"><i class="fas fa-chart-bar"></i> Results &amp; Grading</a>
         </nav>
         <div class="sidebar-bottom">
             <div class="sidebar-user" id="sidebarUser"></div>
@@ -61,7 +62,7 @@
     <div class="modal modal-lg">
         <div class="modal-header">
             <h3>Add Question</h3>
-            <button class="modal-close" onclick="closeModal('questionModal')">✕</button>
+            <button class="modal-close" onclick="closeModal('questionModal')"><i class="fas fa-xmark"></i></button>
         </div>
         <form id="questionForm" onsubmit="event.preventDefault();saveQuestion()">
             <div class="modal-body">

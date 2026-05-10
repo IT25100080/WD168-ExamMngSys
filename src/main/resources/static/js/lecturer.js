@@ -110,7 +110,7 @@ function renderExamAccordion(moduleId) {
             </div>
             ${moduleExams.length === 0
                 ? `<div class="empty-state" style="padding:48px">
-                       <div class="empty-icon">📝</div>
+                       <div class="empty-icon"><i class="fas fa-file-pen fa-3x"></i></div>
                        <p>No exams yet. Click "Create Exam" to add one.</p>
                    </div>`
                 : moduleExams.map(e => renderExamCard(e)).join('')}
@@ -356,7 +356,7 @@ function addOption(text = '', correct = false, inputType = 'radio') {
     row.innerHTML = `
         <input type="${inputType}" name="correctOpt" class="opt-correct" ${correct ? 'checked' : ''} title="Mark as correct">
         <input type="text" class="opt-text" value="${esc(text)}" placeholder="Option text">
-        <button type="button" class="btn btn-sm btn-danger btn-icon" onclick="removeOption('opt-${optionCount}')">✕</button>`;
+        <button type="button" class="btn btn-sm btn-danger btn-icon" onclick="removeOption('opt-${optionCount}')"><i class="fas fa-xmark"></i></button>`;
     document.getElementById('optionRows').appendChild(row);
 }
 
@@ -495,13 +495,13 @@ function onResultsModuleChange() {
     if (!resultsModuleId) {
         examSel.innerHTML = '<option value="">-- Select Exam --</option>';
         examSel.disabled  = true;
-        container.innerHTML = `<div class="empty-state"><div class="empty-icon">📋</div>
+        container.innerHTML = `<div class="empty-state"><div class="empty-icon"><i class="fas fa-clipboard-list fa-3x"></i></div>
             <p>Select a module and exam above to view student submissions.</p></div>`;
         return;
     }
 
     populateExamDropdown(resultsModuleId);
-    container.innerHTML = `<div class="empty-state"><div class="empty-icon">📋</div>
+    container.innerHTML = `<div class="empty-state"><div class="empty-icon"><i class="fas fa-clipboard-list fa-3x"></i></div>
         <p>Select an exam above to view its submissions.</p></div>`;
 }
 
@@ -509,7 +509,7 @@ async function onResultsExamChange() {
     resultsExamId = document.getElementById('resultsExamSel').value || null;
     const container = document.getElementById('moduleResultsContainer');
     if (!resultsExamId) {
-        container.innerHTML = `<div class="empty-state"><div class="empty-icon">📋</div>
+        container.innerHTML = `<div class="empty-state"><div class="empty-icon"><i class="fas fa-clipboard-list fa-3x"></i></div>
             <p>Select an exam above to view its submissions.</p></div>`;
         return;
     }
@@ -523,7 +523,7 @@ async function loadSingleExamResults(examId) {
 
     const exam = resultsAllExams.find(e => e.id == examId);
     if (!exam) {
-        container.innerHTML = `<div class="empty-state"><div class="empty-icon">📋</div><p>Exam not found.</p></div>`;
+        container.innerHTML = `<div class="empty-state"><div class="empty-icon"><i class="fas fa-clipboard-list fa-3x"></i></div><p>Exam not found.</p></div>`;
         return;
     }
 
@@ -561,8 +561,8 @@ function renderExamSubmissionsCard(exam, attempts, questions) {
             </div>
             <div style="display:flex;gap:8px;flex-shrink:0;flex-wrap:wrap">
                 ${exam.resultsReleased
-                    ? `<button class="btn btn-warning btn-sm" onclick="reviseResultsFor(${exam.id})">✏️ Revise Results</button>`
-                    : `<button class="btn btn-success btn-sm" onclick="releaseResultsFor(${exam.id})">🔓 Release Results</button>`}
+                    ? `<button class="btn btn-warning btn-sm" onclick="reviseResultsFor(${exam.id})"><i class="fas fa-pencil"></i> Revise Results</button>`
+                    : `<button class="btn btn-success btn-sm" onclick="releaseResultsFor(${exam.id})"><i class="fas fa-lock-open"></i> Release Results</button>`}
             </div>
         </div>
 
@@ -667,7 +667,7 @@ function renderInspectModalBody(attemptId, answers) {
                 <button class="btn btn-success btn-sm"
                     onclick="saveInspectGrade(${attemptId},${a.questionId},${a.marks})">Save</button>
                 <span id="igrade_ok_${attemptId}_${a.questionId}"
-                    style="color:#16a34a;font-size:13px;display:none">✓ Saved</span>
+                    style="color:#16a34a;font-size:13px;display:none"><i class="fas fa-check"></i> Saved</span>
             </div>
         </div>
         ` : renderOptionsList(a.options || [])}
@@ -683,8 +683,8 @@ function renderOptionsList(options) {
     }
     const rows = options.map(opt => {
         let bg, border, icon, textColor;
-        if (opt.selected && opt.isCorrect)  { bg = '#dcfce7'; border = '#86efac'; icon = '✓'; textColor = '#15803d'; }
-        else if (opt.selected && !opt.isCorrect) { bg = '#fee2e2'; border = '#fca5a5'; icon = '✗'; textColor = '#b91c1c'; }
+        if (opt.selected && opt.isCorrect)  { bg = '#dcfce7'; border = '#86efac'; icon = '<i class="fas fa-check"></i>'; textColor = '#15803d'; }
+        else if (opt.selected && !opt.isCorrect) { bg = '#fee2e2'; border = '#fca5a5'; icon = '<i class="fas fa-xmark"></i>'; textColor = '#b91c1c'; }
         else if (!opt.selected && opt.isCorrect) { bg = '#fef9c3'; border = '#fde047'; icon = '→'; textColor = '#854d0e'; }
         else { bg = '#f8fafc'; border = '#e2e8f0'; icon = '·'; textColor = '#94a3b8'; }
         return `<div style="display:flex;gap:10px;align-items:center;padding:9px 12px;border-radius:7px;
@@ -699,8 +699,8 @@ function renderOptionsList(options) {
         <p style="font-size:12px;font-weight:600;color:#64748b;margin-bottom:8px;text-transform:uppercase;letter-spacing:0.4px">Student's Answer</p>
         ${rows}
         <p style="font-size:11px;color:#94a3b8;margin-top:8px">
-            <span style="color:#15803d;font-weight:700">✓</span> Correct selected &nbsp;
-            <span style="color:#b91c1c;font-weight:700">✗</span> Wrong selected &nbsp;
+            <span style="color:#15803d;font-weight:700"><i class="fas fa-check"></i></span> Correct selected &nbsp;
+            <span style="color:#b91c1c;font-weight:700"><i class="fas fa-xmark"></i></span> Wrong selected &nbsp;
             <span style="color:#854d0e;font-weight:700">→</span> Correct not selected
         </p>
     </div>`;

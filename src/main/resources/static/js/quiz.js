@@ -346,7 +346,7 @@ function showSubmittedScreen(msg) {
     content.innerHTML = `
         <div style="display:flex;align-items:center;justify-content:center;min-height:60vh;">
             <div class="card" style="text-align:center;max-width:480px;padding:48px">
-                <div style="font-size:64px;margin-bottom:16px">✅</div>
+                <div style="margin-bottom:16px"><i class="fas fa-circle-check" style="font-size:64px;color:#16a34a"></i></div>
                 <h2 style="font-size:22px;font-weight:700;margin-bottom:8px">Exam Submitted!</h2>
                 <p style="color:#64748b;margin-bottom:24px">${escHtml(subtitle)}</p>
                 <a href="/pages/student/results.html" class="btn btn-primary">View Results</a>

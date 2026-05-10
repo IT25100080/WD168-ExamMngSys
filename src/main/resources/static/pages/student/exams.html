@@ -5,16 +5,17 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>My Exams – ExamPortal</title>
     <link rel="stylesheet" href="/css/styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 </head>
 <body>
 <div class="layout">
     <aside class="sidebar">
         <div class="sidebar-logo">Exam<span>Portal</span></div>
         <nav class="sidebar-nav">
-            <a href="/pages/student/dashboard.html">🏠 Dashboard</a>
-            <a href="/pages/student/modules.html">📚 Modules</a>
-            <a href="/pages/student/exams.html" class="active">📝 My Exams</a>
-            <a href="/pages/student/results.html">📊 My Results</a>
+            <a href="/pages/student/dashboard.html"><i class="fas fa-house"></i> Dashboard</a>
+            <a href="/pages/student/modules.html"><i class="fas fa-book"></i> Modules</a>
+            <a href="/pages/student/exams.html" class="active"><i class="fas fa-file-pen"></i> My Exams</a>
+            <a href="/pages/student/results.html"><i class="fas fa-chart-bar"></i> My Results</a>
         </nav>
         <div class="sidebar-bottom">
             <div class="sidebar-user" id="sidebarUser"></div>
@@ -57,11 +58,11 @@
     <div class="modal">
         <div class="modal-header">
             <h3>Enter Exam Password</h3>
-            <button class="modal-close" onclick="closeModal('accessModal')">✕</button>
+            <button class="modal-close" onclick="closeModal('accessModal')"><i class="fas fa-xmark"></i></button>
         </div>
         <div class="modal-body">
             <p style="font-size:14px;color:#64748b;margin-bottom:16px">
-                ⚠️ Once you enter the exam, the timer will start immediately.<br>
+                <i class="fas fa-triangle-exclamation"></i> Once you enter the exam, the timer will start immediately.<br>
                 Check the <strong>Attempts</strong> column for how many tries you have.
             </p>
             <div class="form-group">
