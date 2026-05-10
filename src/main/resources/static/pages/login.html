@@ -33,6 +33,9 @@
                 <input type="password" id="loginPassword" class="form-control" placeholder="Enter your password">
             </div>
             <button class="btn btn-primary w-full" onclick="login()">Sign In</button>
+            <p class="text-center" style="margin-top:12px">
+                <button type="button" style="background:none;border:none;color:#2563eb;cursor:pointer;font-size:13px;padding:0;text-decoration:underline" onclick="showForgotModal()">Forgot Password?</button>
+            </p>
         </div>
 
         <!-- Register Form -->
@@ -60,6 +63,30 @@
         </div>
     </div>
 </div>
+<!-- Forgot Password Modal -->
+<div class="modal-overlay hidden" id="forgotModal">
+    <div class="modal">
+        <div class="modal-header">
+            <h3>Request Password Reset</h3>
+            <button class="modal-close" onclick="closeModal('forgotModal')"><i class="fas fa-xmark"></i></button>
+        </div>
+        <div class="modal-body">
+            <p style="font-size:14px;color:#64748b;margin-bottom:16px">
+                Enter your username or email. An administrator will reset your password and provide you with the new one.
+            </p>
+            <div class="form-group">
+                <label>Username or Email <span style="color:red">*</span></label>
+                <input type="text" id="forgotIdentifier" class="form-control" placeholder="Enter your username or email">
+            </div>
+            <div id="forgotAlert" class="alert hidden" style="margin-top:12px"></div>
+        </div>
+        <div class="modal-footer">
+            <button class="btn btn-secondary" onclick="closeModal('forgotModal')">Cancel</button>
+            <button class="btn btn-primary" onclick="submitForgotPassword()">Submit Request</button>
+        </div>
+    </div>
+</div>
+
 <script src="/js/auth.js"></script>
 </body>
 </html>

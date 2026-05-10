@@ -89,6 +89,17 @@ public class AdminController {
         return ResponseEntity.ok(Map.of("message", "Password reset successfully"));
     }
 
+    @GetMapping("/password-reset-requests")
+    public ResponseEntity<?> getPasswordResetRequests() {
+        return ResponseEntity.ok(adminService.getPendingResetRequests());
+    }
+
+    @DeleteMapping("/password-reset-requests/{id}")
+    public ResponseEntity<?> resolvePasswordResetRequest(@PathVariable Long id) {
+        adminService.resolveResetRequest(id);
+        return ResponseEntity.ok(Map.of("message", "Request resolved"));
+    }
+
     @GetMapping("/students/{studentId}/enrollments")
     public ResponseEntity<?> getStudentEnrollments(@PathVariable Long studentId) {
         return ResponseEntity.ok(adminService.getStudentEnrollments(studentId));

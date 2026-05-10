@@ -209,6 +209,39 @@ function closeModal(id) { document.getElementById(id).classList.add('hidden'); }
         if (el) el.classList.add('hidden');
     }
 
+    window.showForgotModal = function() {
+        document.getElementById('forgotIdentifier').value = '';
+        const alert = document.getElementById('forgotAlert');
+        if (alert) { alert.classList.add('hidden'); alert.textContent = ''; }
+        openModal('forgotModal');
+    };
+
+    window.submitForgotPassword = async function() {
+        const identifier = document.getElementById('forgotIdentifier').value.trim();
+        if (!identifier) { showForgotAlert('Please enter your username or email.', 'error'); return; }
+        try {
+            const res = await fetch('/api/auth/forgot-password', {
+                method: 'POST', headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ identifier })
+            });
+            const data = await res.json();
+            if (res.ok) {
+                showForgotAlert(data.message, 'success');
+                document.getElementById('forgotIdentifier').disabled = true;
+            } else {
+                showForgotAlert(data.error || 'Failed to submit request.', 'error');
+            }
+        } catch (e) { showForgotAlert('Connection error. Please try again.', 'error'); }
+    };
+
+    function showForgotAlert(msg, type) {
+        const el = document.getElementById('forgotAlert');
+        if (!el) return;
+        el.className = `alert alert-${type}`;
+        el.textContent = msg;
+        el.classList.remove('hidden');
+    }
+
     document.addEventListener('keydown', e => {
         if (e.key !== 'Enter') return;
         const loginHidden = document.getElementById('loginForm').classList.contains('hidden');
