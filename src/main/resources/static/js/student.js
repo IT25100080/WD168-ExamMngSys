@@ -276,8 +276,8 @@ async function initResults() {
     tbody.innerHTML = results.map(a => {
         const total = (a.autoScore || 0) + (a.manualScore || 0);
         const pct   = a.maxScore ? Math.round(total / a.maxScore * 100) : 0;
-        const grade = pct >= 80 ? 'A' : pct >= 70 ? 'B' : pct >= 60 ? 'C' : pct >= 50 ? 'D' : 'F';
-        const gradeColor = pct >= 60 ? '#16a34a' : '#dc2626';
+        const grade = getGrade(pct);
+        const gradeColor = getGradeColor(pct);
         return `
         <tr>
             <td><strong>${esc(a.exam?.title || '—')}</strong></td>

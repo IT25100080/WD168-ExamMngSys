@@ -536,6 +536,7 @@ async function loadSingleExamResults(examId) {
     const questions  = await qRes.json();
 
     container.innerHTML = renderExamSubmissionsCard(exam, attempts, questions);
+    renderGradeChart(attempts);
 }
 
 function renderExamSubmissionsCard(exam, attempts, questions) {
@@ -563,6 +564,7 @@ function renderExamSubmissionsCard(exam, attempts, questions) {
                 ${exam.resultsReleased
                     ? `<button class="btn btn-warning btn-sm" onclick="reviseResultsFor(${exam.id})"><i class="fas fa-pencil"></i> Revise Results</button>`
                     : `<button class="btn btn-success btn-sm" onclick="releaseResultsFor(${exam.id})"><i class="fas fa-lock-open"></i> Release Results</button>`}
+                <button class="btn btn-secondary btn-sm" onclick="downloadMarksheetPDF()"><i class="fas fa-file-pdf"></i> Download PDF</button>
             </div>
         </div>
 
@@ -573,16 +575,25 @@ function renderExamSubmissionsCard(exam, attempts, questions) {
             <div class="stat-card purple" style="padding:12px 16px"><div class="stat-value" style="font-size:22px">${avgScore}</div><div class="stat-label">Avg Score${maxScore ? ' / ' + maxScore : ''}</div></div>
         </div>
 
+        ${total > 0 ? `
+        <div style="padding:0 0 20px 0">
+            <h3 style="font-size:14px;font-weight:600;color:#374151;margin-bottom:12px">Marks Distribution</h3>
+            <div style="position:relative;height:220px">
+                <canvas id="gradeDistChart"></canvas>
+            </div>
+        </div>` : ''}
+
         ${total === 0
             ? '<p class="text-muted text-center" style="padding:20px">No submissions yet.</p>'
             : `<div class="table-wrapper">
                <table>
                  <thead><tr>
-                   <th>Student</th><th>Status</th><th>Auto</th><th>Manual</th><th>Total / Max</th><th>Submitted At</th><th></th>
+                   <th>Student</th><th>Status</th><th>Auto</th><th>Manual</th><th>Total / Max</th><th>Grade</th><th>Submitted At</th><th></th>
                  </tr></thead>
                  <tbody>
                    ${attempts.map(a => {
                        const scored = (a.autoScore || 0) + (a.manualScore || 0);
+                       const pct    = a.maxScore ? Math.round(scored / a.maxScore * 100) : 0;
                        return `<tr>
                          <td>
                            <strong>${esc(a.student?.fullName || a.student?.username || 'Unknown')}</strong>
@@ -592,6 +603,7 @@ function renderExamSubmissionsCard(exam, attempts, questions) {
                          <td>${a.autoScore || 0}</td>
                          <td>${a.manualScore || 0}</td>
                          <td><strong style="color:#2563eb">${scored} / ${a.maxScore || 0}</strong></td>
+                         <td><strong style="color:${getGradeColor(pct)}">${getGrade(pct)}</strong></td>
                          <td class="text-muted">${formatDate(a.endTime || a.startTime)}</td>
                          <td>
                            <div class="actions-cell">
@@ -757,6 +769,148 @@ async function deleteAttemptAndReload(attemptId, examId) {
     } else {
         toast('Failed to delete submission.', 'error');
     }
+}
+
+/* ============================================================
+   GRADE DISTRIBUTION CHART
+   ============================================================ */
+let _gradeChart = null;
+
+function renderGradeChart(attempts) {
+    const canvas = document.getElementById('gradeDistChart');
+    if (!canvas) return;
+
+    if (_gradeChart) { _gradeChart.destroy(); _gradeChart = null; }
+
+    const grades = ['A+', 'A', 'A-', 'B+', 'B', 'B-', 'C+', 'C', 'C-', 'D+', 'D', 'E'];
+    const counts = Object.fromEntries(grades.map(g => [g, 0]));
+
+    attempts.filter(a => a.status !== 'IN_PROGRESS').forEach(a => {
+        const scored = (a.autoScore || 0) + (a.manualScore || 0);
+        const pct    = a.maxScore ? Math.round(scored / a.maxScore * 100) : 0;
+        counts[getGrade(pct)]++;
+    });
+
+    const bgColors = {
+        'A+': '#16a34a', 'A': '#22c55e', 'A-': '#4ade80',
+        'B+': '#1d4ed8', 'B': '#2563eb', 'B-': '#60a5fa',
+        'C+': '#b45309', 'C': '#d97706', 'C-': '#fbbf24',
+        'D+': '#c2410c', 'D': '#ea580c',
+        'E':  '#dc2626'
+    };
+
+    _gradeChart = new Chart(canvas, {
+        type: 'bar',
+        data: {
+            labels: grades,
+            datasets: [{
+                label: 'Students',
+                data: grades.map(g => counts[g]),
+                backgroundColor: grades.map(g => bgColors[g]),
+                borderRadius: 5,
+                borderSkipped: false
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: { display: false },
+                tooltip: {
+                    callbacks: {
+                        label: ctx => ` ${ctx.parsed.y} student${ctx.parsed.y !== 1 ? 's' : ''}`
+                    }
+                }
+            },
+            scales: {
+                x: { grid: { display: false } },
+                y: {
+                    beginAtZero: true,
+                    ticks: { stepSize: 1, precision: 0 },
+                    grid: { color: '#f1f5f9' }
+                }
+            }
+        }
+    });
+}
+
+/* ============================================================
+   MARKSHEET PDF
+   ============================================================ */
+async function downloadMarksheetPDF() {
+    if (!resultsExamId) return;
+    const exam = resultsAllExams.find(e => e.id == resultsExamId);
+    const examTitle  = exam?.title      || 'Exam';
+    const moduleCode = exam?.module?.moduleCode || '';
+    const moduleName = exam?.module?.name       || '';
+
+    const res = await apiFetch(`/api/lecturer/exams/${resultsExamId}/marksheet`);
+    if (!res || !res.ok) { toast('Failed to load marksheet data.', 'error'); return; }
+    const data = await res.json();
+
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF();
+
+    // Header
+    doc.setFontSize(18);
+    doc.setFont(undefined, 'bold');
+    doc.text('Marksheet', 14, 18);
+
+    doc.setFontSize(11);
+    doc.setFont(undefined, 'normal');
+    doc.setTextColor(80, 80, 80);
+    doc.text(`Exam   : ${examTitle}`, 14, 28);
+    doc.text(`Module : ${moduleCode}${moduleName ? ' – ' + moduleName : ''}`, 14, 35);
+    doc.text(`Generated : ${new Date().toLocaleString()}`, 14, 42);
+
+    doc.setDrawColor(200, 200, 200);
+    doc.line(14, 46, 196, 46);
+
+    // Table
+    const rows = data.map((r, i) => {
+        const pct   = r.maxScore ? Math.round(r.mark / r.maxScore * 100) : 0;
+        const grade = getGrade(pct);
+        return [i + 1, r.username, r.fullName || '—', `${r.mark} / ${r.maxScore}`, grade];
+    });
+
+    doc.autoTable({
+        startY: 50,
+        head: [['#', 'Username', 'Full Name', 'Mark', 'Grade']],
+        body: rows,
+        headStyles: {
+            fillColor: [37, 99, 235],
+            textColor: 255,
+            fontStyle: 'bold',
+            fontSize: 10
+        },
+        bodyStyles: { fontSize: 10 },
+        alternateRowStyles: { fillColor: [241, 245, 249] },
+        columnStyles: {
+            0: { halign: 'center', cellWidth: 12 },
+            3: { halign: 'center' },
+            4: { halign: 'center', fontStyle: 'bold' }
+        },
+        styles: { cellPadding: 4 },
+        didParseCell: function(data) {
+            if (data.section === 'body' && data.column.index === 4) {
+                const grade = data.cell.text[0];
+                if (grade === 'A+' || grade === 'A' || grade === 'A-') {
+                    data.cell.styles.textColor = [22, 163, 74];
+                } else if (grade.startsWith('B')) {
+                    data.cell.styles.textColor = [37, 99, 235];
+                } else if (grade.startsWith('C')) {
+                    data.cell.styles.textColor = [217, 119, 6];
+                } else if (grade.startsWith('D')) {
+                    data.cell.styles.textColor = [234, 88, 12];
+                } else {
+                    data.cell.styles.textColor = [220, 38, 38];
+                }
+            }
+        }
+    });
+
+    const safeTitle = examTitle.replace(/[^a-zA-Z0-9]/g, '_');
+    doc.save(`Marksheet_${moduleCode}_${safeTitle}.pdf`);
 }
 
 /* ============================================================

@@ -124,6 +124,11 @@ public class LecturerController {
         return ResponseEntity.ok(lecturerService.reviseResults(examId, getLecturerId(auth)));
     }
 
+    @GetMapping("/exams/{examId}/marksheet")
+    public ResponseEntity<?> getMarksheet(@PathVariable Long examId, Authentication auth) {
+        return ResponseEntity.ok(lecturerService.getMarksheet(examId, getLecturerId(auth)));
+    }
+
     @DeleteMapping("/attempts/{attemptId}")
     public ResponseEntity<?> deleteAttempt(@PathVariable Long attemptId, Authentication auth) {
         lecturerService.deleteAttempt(attemptId, getLecturerId(auth));

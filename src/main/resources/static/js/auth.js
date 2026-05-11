@@ -144,6 +144,29 @@ function toast(msg, type = 'success') {
 function openModal(id) { document.getElementById(id).classList.remove('hidden'); }
 function closeModal(id) { document.getElementById(id).classList.add('hidden'); }
 
+/* ---------- Grade helpers ---------- */
+function getGrade(pct) {
+    if (pct >= 90) return 'A+';
+    if (pct >= 80) return 'A';
+    if (pct >= 75) return 'A-';
+    if (pct >= 70) return 'B+';
+    if (pct >= 65) return 'B';
+    if (pct >= 60) return 'B-';
+    if (pct >= 55) return 'C+';
+    if (pct >= 45) return 'C';
+    if (pct >= 40) return 'C-';
+    if (pct >= 35) return 'D+';
+    if (pct >= 30) return 'D';
+    return 'E';
+}
+function getGradeColor(pct) {
+    if (pct >= 75) return '#16a34a';
+    if (pct >= 60) return '#2563eb';
+    if (pct >= 40) return '#d97706';
+    if (pct >= 30) return '#ea580c';
+    return '#dc2626';
+}
+
 /* ========================================
    FORCED PASSWORD CHANGE
    ======================================== */

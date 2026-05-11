@@ -19,8 +19,10 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.time.LocalDateTime;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -237,6 +239,23 @@ public class LecturerService {
         Exam exam = getExamForLecturer(examId, lecturerId);
         exam.setResultsReleased(false);
         return examRepository.save(exam);
+    }
+
+    public List<Map<String, Object>> getMarksheet(Long examId, Long lecturerId) {
+        getExamForLecturer(examId, lecturerId);
+        return examAttemptRepository.findByExamId(examId).stream()
+            .filter(a -> a.getStatus() != ExamAttempt.Status.IN_PROGRESS)
+            .map(a -> {
+                int scored = (a.getAutoScore() != null ? a.getAutoScore() : 0)
+                           + (a.getManualScore() != null ? a.getManualScore() : 0);
+                Map<String, Object> row = new LinkedHashMap<>();
+                row.put("username", a.getStudent().getUsername());
+                row.put("fullName", a.getStudent().getFullName() != null ? a.getStudent().getFullName() : "");
+                row.put("mark", scored);
+                row.put("maxScore", a.getMaxScore() != null ? a.getMaxScore() : 0);
+                return row;
+            })
+            .collect(Collectors.toList());
     }
 
     private Exam getExamForLecturer(Long examId, Long lecturerId) {
