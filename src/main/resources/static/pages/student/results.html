@@ -29,6 +29,9 @@
                 <h1>My Results</h1>
                 <p>View released exam results and grades</p>
             </div>
+            <button id="downloadMarksheetBtn" class="btn btn-primary" onclick="downloadStudentMarksheet()" style="display:none">
+                <i class="fas fa-file-pdf"></i> Download Result Sheet
+            </button>
         </div>
 
         <div class="card">
@@ -51,6 +54,8 @@
 </div>
 <div id="toast"></div>
 <script src="/js/auth.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
 <script src="/js/student.js"></script>
 <script>initResults();</script>
 </body>

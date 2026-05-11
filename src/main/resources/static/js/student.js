@@ -262,18 +262,23 @@ function showAccessError(msg) {
 /* ============================================================
    RESULTS
    ============================================================ */
+let studentResults = [];
+
 async function initResults() {
     setLoading('resultsTbody');
     const res = await apiFetch('/api/student/results');
     if (!res) return;
-    const results = await res.json();
+    studentResults = await res.json();
     const tbody = document.getElementById('resultsTbody');
     if (!tbody) return;
-    if (!results.length) {
-        tbody.innerHTML = `<tr><td colspan="5" class="text-center text-muted" style="padding:40px">No results released yet.</td></tr>`;
+    if (!studentResults.length) {
+        tbody.innerHTML = `<tr><td colspan="6" class="text-center text-muted" style="padding:40px">No results released yet.</td></tr>`;
         return;
     }
-    tbody.innerHTML = results.map(a => {
+    const dlBtn = document.getElementById('downloadMarksheetBtn');
+    if (dlBtn) dlBtn.style.display = 'inline-flex';
+
+    tbody.innerHTML = studentResults.map(a => {
         const total = (a.autoScore || 0) + (a.manualScore || 0);
         const pct   = a.maxScore ? Math.round(total / a.maxScore * 100) : 0;
         const grade = getGrade(pct);
@@ -288,6 +293,71 @@ async function initResults() {
             <td><span class="badge badge-${a.status.toLowerCase()}">${a.status}</span></td>
         </tr>`;
     }).join('');
+}
+
+function downloadStudentMarksheet() {
+    if (!studentResults.length) return;
+    const u = getUser();
+
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF();
+
+    // Header
+    doc.setFontSize(18);
+    doc.setFont(undefined, 'bold');
+    doc.text('Student Result Sheet', 14, 18);
+
+    doc.setFontSize(11);
+    doc.setFont(undefined, 'normal');
+    doc.setTextColor(80, 80, 80);
+    doc.text(`Name     : ${u?.fullName || u?.username || '—'}`, 14, 28);
+    doc.text(`Username : ${u?.username || '—'}`, 14, 35);
+    doc.text(`Generated: ${new Date().toLocaleString()}`, 14, 42);
+
+    doc.setDrawColor(200, 200, 200);
+    doc.line(14, 46, 196, 46);
+
+    // Table rows
+    const rows = studentResults.map((a, i) => {
+        const total = (a.autoScore || 0) + (a.manualScore || 0);
+        const pct   = a.maxScore ? Math.round(total / a.maxScore * 100) : 0;
+        return [
+            i + 1,
+            esc(a.exam?.module?.name || '—'),
+            esc(a.exam?.title || '—'),
+            `${total} / ${a.maxScore || 0}`,
+            `${pct}%`,
+            getGrade(pct)
+        ];
+    });
+
+    doc.autoTable({
+        startY: 50,
+        head: [['#', 'Module', 'Exam', 'Mark', '%', 'Grade']],
+        body: rows,
+        headStyles: { fillColor: [37, 99, 235], textColor: 255, fontStyle: 'bold', fontSize: 10 },
+        bodyStyles: { fontSize: 10 },
+        alternateRowStyles: { fillColor: [241, 245, 249] },
+        columnStyles: {
+            0: { halign: 'center', cellWidth: 12 },
+            3: { halign: 'center' },
+            4: { halign: 'center' },
+            5: { halign: 'center', fontStyle: 'bold' }
+        },
+        styles: { cellPadding: 4 },
+        didParseCell: function(data) {
+            if (data.section === 'body' && data.column.index === 5) {
+                const grade = data.cell.text[0];
+                if (['A+','A','A-'].includes(grade))       data.cell.styles.textColor = [22, 163, 74];
+                else if (grade.startsWith('B'))            data.cell.styles.textColor = [37, 99, 235];
+                else if (grade.startsWith('C'))            data.cell.styles.textColor = [217, 119, 6];
+                else if (grade.startsWith('D'))            data.cell.styles.textColor = [234, 88, 12];
+                else                                       data.cell.styles.textColor = [220, 38, 38];
+            }
+        }
+    });
+
+    doc.save(`Marksheet_${u?.username || 'student'}.pdf`);
 }
 
 /* ============================================================
