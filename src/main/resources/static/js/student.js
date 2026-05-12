@@ -357,7 +357,7 @@ function downloadStudentMarksheet() {
         }
     });
 
-    doc.save(`Marksheet_${u?.username || 'student'}.pdf`);
+    doc.save(`ResultSheet_${u?.username || 'student'}.pdf`);
 }
 
 /* ============================================================
