@@ -135,6 +135,7 @@ public class LecturerController {
         return ResponseEntity.ok(Map.of("message", "Attempt deleted"));
     }
 
+
     private Long getLecturerId(Authentication auth) {
         return userService.findByUsername(auth.getName()).getId();
     }

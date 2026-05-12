@@ -588,7 +588,12 @@ function renderExamSubmissionsCard(exam, attempts, questions) {
 
         ${total === 0
             ? '<p class="text-muted text-center" style="padding:20px">No submissions yet.</p>'
-            : `<div class="table-wrapper">
+            : `<div style="margin-bottom:12px;display:flex;align-items:center;gap:8px">
+                 <i class="fas fa-magnifying-glass" style="color:#9ca3af"></i>
+                 <input type="text" id="submissionSearch_${exam.id}" class="form-control" placeholder="Search by student name or username…" style="max-width:320px" oninput="filterSubmissions(${exam.id})">
+                 <span id="submissionSearchCount_${exam.id}" class="text-muted" style="font-size:13px"></span>
+               </div>
+               <div class="table-wrapper">
                <table>
                  <thead><tr>
                    <th>Student</th><th>Status</th><th>Auto</th><th>Manual</th><th>Total / Max</th><th>Grade</th><th>Submitted At</th><th></th>
@@ -597,7 +602,8 @@ function renderExamSubmissionsCard(exam, attempts, questions) {
                    ${attempts.map(a => {
                        const scored = (a.autoScore || 0) + (a.manualScore || 0);
                        const pct    = a.maxScore ? Math.round(scored / a.maxScore * 100) : 0;
-                       return `<tr>
+                       const searchKey = `${a.student?.fullName || ''} ${a.student?.username || ''}`.toLowerCase();
+                       return `<tr data-search="${searchKey}">
                          <td>
                            <strong>${esc(a.student?.fullName || a.student?.username || 'Unknown')}</strong>
                            <div class="text-muted">@${esc(a.student?.username || '')}</div>
@@ -615,8 +621,6 @@ function renderExamSubmissionsCard(exam, attempts, questions) {
                                data-student="${esc(a.student?.fullName || a.student?.username || 'Student')}"
                                data-exam="${esc(exam.title)}"
                                onclick="openInspectModal(this)">Inspect</button>
-                             <button class="btn btn-sm btn-danger"
-                               onclick="deleteAttemptAndReload(${a.id},${exam.id})">Delete</button>
                            </div>
                          </td>
                        </tr>`;
@@ -763,16 +767,20 @@ async function reviseResultsFor(examId) {
     } else toast('Failed to revise results.', 'error');
 }
 
-async function deleteAttemptAndReload(attemptId, examId) {
-    if (!confirm("Delete this student's submission? This cannot be undone.")) return;
-    const res = await apiFetch(`/api/lecturer/attempts/${attemptId}`, { method: 'DELETE' });
-    if (res && res.ok) {
-        toast('Submission deleted.');
-        await loadSingleExamResults(examId);
-    } else {
-        toast('Failed to delete submission.', 'error');
-    }
+
+function filterSubmissions(examId) {
+    const term = (document.getElementById(`submissionSearch_${examId}`)?.value || '').toLowerCase().trim();
+    const rows = document.querySelectorAll(`#exam-result-card-${examId} tbody tr`);
+    let visible = 0;
+    rows.forEach(row => {
+        const match = !term || (row.dataset.search || '').includes(term);
+        row.style.display = match ? '' : 'none';
+        if (match) visible++;
+    });
+    const countEl = document.getElementById(`submissionSearchCount_${examId}`);
+    if (countEl) countEl.textContent = term ? `${visible} of ${rows.length} shown` : '';
 }
+
 
 /* ============================================================
    GRADE DISTRIBUTION CHART
