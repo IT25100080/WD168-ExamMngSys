@@ -51,7 +51,7 @@ public class StudentService {
         Module module = moduleRepository.findById(moduleId)
             .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Module not found"));
         if (!module.getEnrollmentKey().equals(enrollmentKey)) {
-            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Invalid enrollment key");
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid enrollment key");
         }
         if (studentModuleRepository.existsByStudentIdAndModuleId(studentId, moduleId)) {
             throw new ResponseStatusException(HttpStatus.CONFLICT, "Already enrolled");
