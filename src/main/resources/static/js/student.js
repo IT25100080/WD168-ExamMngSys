@@ -39,6 +39,8 @@ let browseYears = [];
 let browseSelectedYearId = null;
 let browseSelectedSemId  = null;
 let enrollingModuleId    = null;
+let enrolledModuleIds    = new Set();
+let currentBrowseModules = [];
 
 async function initModules() {
     await Promise.all([loadBrowseYears(), loadEnrolledModules()]);
@@ -88,6 +90,7 @@ async function selectSemester(semId, btn) {
 }
 
 function renderBrowseModules(list) {
+    currentBrowseModules = list;
     const tbody = document.getElementById('browseModulesTbody');
     if (!tbody) return;
     if (!list.length) {
@@ -99,7 +102,10 @@ function renderBrowseModules(list) {
             <td><strong>${esc(m.moduleCode)}</strong></td>
             <td>${esc(m.name)}</td>
             <td>${esc(m.lecturer ? (m.lecturer.fullName || m.lecturer.username) : '—')}</td>
-            <td><button class="btn btn-sm btn-primary" onclick="showEnrollModal(${m.id})">Enroll</button></td>
+            <td>${enrolledModuleIds.has(m.id)
+                ? `<span class="badge badge-active">Enrolled</span>`
+                : `<button class="btn btn-sm btn-primary" onclick="showEnrollModal(${m.id})">Enroll</button>`}
+            </td>
         </tr>`).join('');
 }
 
@@ -107,6 +113,7 @@ async function loadEnrolledModules() {
     const res = await apiFetch('/api/student/modules/enrolled');
     if (!res) return;
     const mods = await res.json();
+    enrolledModuleIds = new Set(mods.map(m => m.id));
     const tbody = document.getElementById('enrolledModulesTbody');
     if (!tbody) return;
     tbody.innerHTML = mods.length ? mods.map(m => `
@@ -138,6 +145,7 @@ async function submitEnroll() {
         closeModal('enrollModal');
         toast('Successfully enrolled!');
         await loadEnrolledModules();
+        renderBrowseModules(currentBrowseModules);
     } else {
         const d = await res.json();
         showEnrollError(d.message || 'Invalid enrollment key.');
