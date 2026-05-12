@@ -8,6 +8,9 @@ if (user) populateSidebarUser();
    DASHBOARD
    ============================================================ */
 async function initDashboard() {
+    const u = getUser();
+    setText('greetingHeading', `${getTimeGreeting()}, ${u?.fullName || u?.username || ''}!`);
+
     const [modRes, resRes] = await Promise.all([
         apiFetch('/api/student/modules/enrolled'),
         apiFetch('/api/student/results')
