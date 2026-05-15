@@ -2,8 +2,11 @@ package com.wd168.ExamMngSys.controller;
 
 import com.wd168.ExamMngSys.model.User;
 import com.wd168.ExamMngSys.service.AdminService;
+import com.wd168.ExamMngSys.service.AnnouncementService;
+import com.wd168.ExamMngSys.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Map;
@@ -14,6 +17,8 @@ import java.util.Map;
 public class AdminController {
 
     private final AdminService adminService;
+    private final AnnouncementService announcementService;
+    private final UserService userService;
 
     @GetMapping("/years")
     public ResponseEntity<?> getYears() {
@@ -98,5 +103,26 @@ public class AdminController {
     public ResponseEntity<?> unenrollStudent(@PathVariable Long studentId, @PathVariable Long moduleId) {
         adminService.unenrollStudent(studentId, moduleId);
         return ResponseEntity.ok(Map.of("message", "Student unenrolled"));
+    }
+
+    @GetMapping("/announcements")
+    public ResponseEntity<?> getAnnouncements() {
+        return ResponseEntity.ok(announcementService.getAllAnnouncements());
+    }
+
+    @PostMapping("/announcements")
+    public ResponseEntity<?> postAnnouncement(@RequestBody Map<String, Object> body, Authentication auth) {
+        Long adminId = userService.findByUsername(auth.getName()).getId();
+        Long moduleId = body.get("moduleId") != null && !body.get("moduleId").toString().isBlank()
+            ? Long.valueOf(body.get("moduleId").toString()) : null;
+        String title = body.get("title").toString();
+        String message = body.get("message").toString();
+        return ResponseEntity.ok(announcementService.postAdminAnnouncement(adminId, moduleId, title, message));
+    }
+
+    @DeleteMapping("/announcements/{id}")
+    public ResponseEntity<?> deleteAnnouncement(@PathVariable Long id) {
+        announcementService.deleteAnnouncementAsAdmin(id);
+        return ResponseEntity.ok(Map.of("message", "Announcement deleted"));
     }
 }

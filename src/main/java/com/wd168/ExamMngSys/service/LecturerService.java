@@ -1,12 +1,14 @@
 package com.wd168.ExamMngSys.service;
 
 import com.wd168.ExamMngSys.model.AnswerOption;
+import com.wd168.ExamMngSys.model.Concern;
 import com.wd168.ExamMngSys.model.Exam;
 import com.wd168.ExamMngSys.model.ExamAttempt;
 import com.wd168.ExamMngSys.model.Module;
 import com.wd168.ExamMngSys.model.Question;
 import com.wd168.ExamMngSys.model.StudentAnswer;
 import com.wd168.ExamMngSys.repository.AnswerOptionRepository;
+import com.wd168.ExamMngSys.repository.ConcernRepository;
 import com.wd168.ExamMngSys.repository.ExamAttemptRepository;
 import com.wd168.ExamMngSys.repository.ExamRepository;
 import com.wd168.ExamMngSys.repository.ModuleRepository;
@@ -34,6 +36,7 @@ public class LecturerService {
     private final AnswerOptionRepository answerOptionRepository;
     private final ExamAttemptRepository examAttemptRepository;
     private final StudentAnswerRepository studentAnswerRepository;
+    private final ConcernRepository concernRepository;
 
     public List<Module> getAssignedModules(Long lecturerId) {
         return moduleRepository.findByLecturersId(lecturerId);
@@ -256,6 +259,21 @@ public class LecturerService {
                 return row;
             })
             .collect(Collectors.toList());
+    }
+
+    public List<Concern> getLecturerConcerns(Long lecturerId) {
+        return concernRepository.findByExamModuleLecturersIdOrderByCreatedAtDesc(lecturerId);
+    }
+
+    @Transactional
+    public Concern replyConcern(Long concernId, Long lecturerId, String reply, boolean resolved) {
+        Concern concern = concernRepository.findById(concernId)
+            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Concern not found"));
+        getExamForLecturer(concern.getExam().getId(), lecturerId);
+        concern.setLecturerReply(reply);
+        concern.setStatus(resolved ? Concern.Status.RESOLVED : Concern.Status.OPEN);
+        concern.setRepliedAt(java.time.LocalDateTime.now());
+        return concernRepository.save(concern);
     }
 
     private Exam getExamForLecturer(Long examId, Long lecturerId) {

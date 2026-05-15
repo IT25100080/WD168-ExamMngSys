@@ -925,6 +925,202 @@ async function downloadMarksheetPDF() {
 }
 
 /* ============================================================
+   ANNOUNCEMENTS
+   ============================================================ */
+async function initLecturerAnnouncements() {
+    await loadLecturerAnnouncementsTable();
+    await loadAnnouncementModules();
+}
+
+async function loadLecturerAnnouncementsTable() {
+    const res = await apiFetch('/api/lecturer/announcements');
+    if (!res) return;
+    const list = await res.json();
+    const tbody = document.getElementById('lecturerAnnouncementsTbody');
+    if (!tbody) return;
+    const me = getUser();
+    tbody.innerHTML = list.length ? list.map(a => {
+        const isOwn = a.postedBy?.username === me?.username;
+        return `
+        <tr>
+            <td>${esc(a.module?.name || '—')}<div class="text-muted">${esc(a.module?.moduleCode || '')}</div></td>
+            <td><strong>${esc(a.title)}</strong></td>
+            <td style="max-width:200px;white-space:normal">${esc(a.message)}</td>
+            <td>
+                ${esc(a.postedBy?.fullName || a.postedBy?.username || '—')}
+                ${!isOwn ? '<span class="badge badge-draft" style="margin-left:4px">Admin</span>' : ''}
+            </td>
+            <td class="text-muted">${formatDate(a.createdAt)}</td>
+            <td>${isOwn ? `<button class="btn btn-sm btn-danger" onclick="deleteLecturerAnnouncement(${a.id})"><i class="fas fa-trash"></i></button>` : '—'}</td>
+        </tr>`;
+    }).join('')
+        : `<tr><td colspan="6" class="text-center text-muted" style="padding:32px">No announcements yet.</td></tr>`;
+}
+
+async function loadAnnouncementModules() {
+    const res = await apiFetch('/api/lecturer/modules');
+    if (!res) return;
+    const mods = await res.json();
+    const sel = document.getElementById('announcementModuleSel');
+    if (!sel) return;
+    sel.innerHTML = '<option value="">-- Select Module --</option>' +
+        mods.map(m => `<option value="${m.id}">${esc(m.moduleCode)} – ${esc(m.name)}</option>`).join('');
+}
+
+function openPostAnnouncementModal() {
+    document.getElementById('announcementTitle').value = '';
+    document.getElementById('announcementMessage').value = '';
+    document.getElementById('announcementModuleSel').value = '';
+    document.getElementById('announcementError').classList.add('hidden');
+    openModal('postAnnouncementModal');
+}
+
+async function submitLecturerAnnouncement() {
+    const moduleId = document.getElementById('announcementModuleSel').value;
+    const title    = document.getElementById('announcementTitle').value.trim();
+    const message  = document.getElementById('announcementMessage').value.trim();
+    const errEl    = document.getElementById('announcementError');
+    if (!moduleId) { errEl.textContent = 'Select a module.';          errEl.classList.remove('hidden'); return; }
+    if (!title)    { errEl.textContent = 'Enter a title.';            errEl.classList.remove('hidden'); return; }
+    if (!message)  { errEl.textContent = 'Enter a message.';          errEl.classList.remove('hidden'); return; }
+    errEl.classList.add('hidden');
+    const res = await apiFetch('/api/lecturer/announcements', {
+        method: 'POST', body: JSON.stringify({ moduleId, title, message })
+    });
+    if (res && res.ok) {
+        closeModal('postAnnouncementModal');
+        toast('Announcement posted.');
+        await loadLecturerAnnouncementsTable();
+    } else {
+        errEl.textContent = 'Failed to post announcement.';
+        errEl.classList.remove('hidden');
+    }
+}
+
+async function deleteLecturerAnnouncement(id) {
+    if (!confirm('Delete this announcement?')) return;
+    const res = await apiFetch(`/api/lecturer/announcements/${id}`, { method: 'DELETE' });
+    if (res && res.ok) { toast('Announcement deleted.'); await loadLecturerAnnouncementsTable(); }
+    else toast('Failed to delete.', 'error');
+}
+
+/* ============================================================
+   CONCERNS
+   ============================================================ */
+let allLecturerConcerns = [];
+let replyingConcernId   = null;
+
+async function initLecturerConcerns() {
+    const res = await apiFetch('/api/lecturer/concerns');
+    if (!res) return;
+    allLecturerConcerns = await res.json();
+    populateConcernModuleFilter();
+    applyConcernFilters();
+}
+
+function populateConcernModuleFilter() {
+    const sel = document.getElementById('concernModuleSel');
+    if (!sel) return;
+    const seen = new Set();
+    const modules = allLecturerConcerns
+        .map(c => ({ id: c.exam?.module?.id, name: c.exam?.module?.name }))
+        .filter(m => m.id && !seen.has(m.id) && seen.add(m.id));
+    sel.innerHTML = '<option value="">All Modules</option>' +
+        modules.map(m => `<option value="${m.id}">${esc(m.name)}</option>`).join('');
+}
+
+function onConcernModuleChange() {
+    const moduleId = document.getElementById('concernModuleSel')?.value;
+    const examSel  = document.getElementById('concernExamSel');
+    if (!examSel) return;
+    const exams = moduleId
+        ? allLecturerConcerns
+            .filter(c => String(c.exam?.module?.id) === moduleId)
+            .reduce((map, c) => { map.set(c.exam.id, c.exam.title); return map; }, new Map())
+        : new Map();
+    examSel.innerHTML = '<option value="">All Exams</option>' +
+        [...exams.entries()].map(([id, title]) => `<option value="${id}">${esc(title)}</option>`).join('');
+    applyConcernFilters();
+}
+
+function applyConcernFilters() {
+    const moduleId = document.getElementById('concernModuleSel')?.value || '';
+    const examId   = document.getElementById('concernExamSel')?.value   || '';
+    const status   = document.getElementById('concernStatusSel')?.value  || 'ALL';
+    const filtered = allLecturerConcerns.filter(c => {
+        if (moduleId && String(c.exam?.module?.id) !== moduleId) return false;
+        if (examId   && String(c.exam?.id)         !== examId)   return false;
+        if (status !== 'ALL' && c.status !== status)             return false;
+        return true;
+    });
+    renderLecturerConcerns(filtered);
+}
+
+function renderLecturerConcerns(list) {
+    const tbody = document.getElementById('lecturerConcernsTbody');
+    if (!tbody) return;
+    if (!list.length) {
+        tbody.innerHTML = `<tr><td colspan="7" class="text-center text-muted" style="padding:32px">No concerns found.</td></tr>`;
+        return;
+    }
+    tbody.innerHTML = list.map(c => `
+        <tr>
+            <td>
+                <strong>${esc(c.student?.fullName || c.student?.username || '—')}</strong>
+                <div class="text-muted">@${esc(c.student?.username || '')}</div>
+            </td>
+            <td>${esc(c.exam?.title || '—')}<div class="text-muted">${esc(c.exam?.module?.name || '')}</div></td>
+            <td>${esc(c.subject)}</td>
+            <td style="max-width:200px;white-space:normal">${esc(c.message)}</td>
+            <td><span class="badge ${c.status === 'RESOLVED' ? 'badge-active' : 'badge-draft'}">${c.status}</span></td>
+            <td class="text-muted">${formatDate(c.createdAt)}</td>
+            <td>
+                <button class="btn btn-sm btn-primary" onclick="openReplyModal(${c.id})">
+                    <i class="fas fa-reply"></i> Reply
+                </button>
+            </td>
+        </tr>`).join('');
+}
+
+function openReplyModal(concernId) {
+    const c = allLecturerConcerns.find(x => x.id === concernId);
+    if (!c) return;
+    replyingConcernId = concernId;
+    document.getElementById('replyConcernMeta').textContent =
+        `${c.student?.fullName || c.student?.username} · ${c.exam?.title}`;
+    document.getElementById('replyConcernSubject').textContent = c.subject;
+    document.getElementById('replyConcernMessage').textContent = c.message;
+    document.getElementById('replyText').value = c.lecturerReply || '';
+    document.getElementById('resolvedCheck').checked = c.status === 'RESOLVED';
+    document.getElementById('replyError').classList.add('hidden');
+    openModal('replyModal');
+    setTimeout(() => document.getElementById('replyText').focus(), 100);
+}
+
+async function submitReply() {
+    const reply    = document.getElementById('replyText').value.trim();
+    const resolved = document.getElementById('resolvedCheck').checked;
+    const errEl    = document.getElementById('replyError');
+
+    if (!reply) { errEl.textContent = 'Please enter a reply.'; errEl.classList.remove('hidden'); return; }
+    errEl.classList.add('hidden');
+
+    const res = await apiFetch(`/api/lecturer/concerns/${replyingConcernId}/reply`, {
+        method: 'PUT',
+        body: JSON.stringify({ reply, resolved })
+    });
+    if (!res) return;
+    if (res.ok) {
+        closeModal('replyModal');
+        toast('Reply sent successfully.');
+        await initLecturerConcerns();
+    } else {
+        errEl.textContent = 'Failed to send reply.';
+        errEl.classList.remove('hidden');
+    }
+}
+
+/* ============================================================
    Helpers
    ============================================================ */
 function esc(str) {

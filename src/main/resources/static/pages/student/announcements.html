@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Announcements – ExamPortal</title>
+    <link rel="stylesheet" href="/css/styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+</head>
+<body>
+<div class="layout">
+    <aside class="sidebar">
+        <div class="sidebar-logo">Exam<span>Portal</span></div>
+        <nav class="sidebar-nav">
+            <a href="/pages/student/dashboard.html"><i class="fas fa-house"></i> Dashboard</a>
+            <a href="/pages/student/modules.html"><i class="fas fa-book"></i> Modules</a>
+            <a href="/pages/student/exams.html"><i class="fas fa-file-pen"></i> My Exams</a>
+            <a href="/pages/student/results.html"><i class="fas fa-chart-bar"></i> My Results</a>
+            <a href="/pages/student/concerns.html"><i class="fas fa-comment-dots"></i> Concerns</a>
+            <a href="/pages/student/announcements.html" class="active"><i class="fas fa-bell"></i> Announcements <span id="notifBadge" style="display:none;background:#ef4444;color:#fff;border-radius:10px;padding:1px 7px;font-size:11px;font-weight:700;margin-left:4px">0</span></a>
+        </nav>
+        <div class="sidebar-bottom">
+            <div class="sidebar-user" id="sidebarUser"></div>
+            <button class="btn-logout" onclick="logout()">Sign Out</button>
+        </div>
+    </aside>
+
+    <main class="main-content">
+        <div class="page-header">
+            <div class="page-header-text">
+                <h1>Announcements</h1>
+                <p>Notices from your lecturers and administration</p>
+            </div>
+            <div style="display:flex;gap:8px;align-items:center">
+                <select id="announcementFilterSel" class="form-control" style="width:140px" onchange="filterAnnouncements()">
+                    <option value="ALL">All</option>
+                    <option value="UNREAD">Unread</option>
+                    <option value="READ">Read</option>
+                </select>
+                <button class="btn btn-secondary" onclick="markAllRead()"><i class="fas fa-check-double"></i> Mark All Read</button>
+            </div>
+        </div>
+
+        <div id="announcementsContainer">
+            <div class="loading">Loading announcements…</div>
+        </div>
+    </main>
+</div>
+<div id="toast"></div>
+<script src="/js/auth.js"></script>
+<script src="/js/student.js"></script>
+<script>initAnnouncements();</script>
+</body>
+</html>

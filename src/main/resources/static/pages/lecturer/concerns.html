@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Concerns – ExamPortal</title>
+    <link rel="stylesheet" href="/css/styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+</head>
+<body>
+<div class="layout">
+    <aside class="sidebar">
+        <div class="sidebar-logo">Exam<span>Portal</span></div>
+        <nav class="sidebar-nav">
+            <a href="/pages/lecturer/dashboard.html"><i class="fas fa-house"></i> Dashboard</a>
+            <a href="/pages/lecturer/exams.html"><i class="fas fa-file-pen"></i> Exams &amp; Questions</a>
+            <a href="/pages/lecturer/results.html"><i class="fas fa-chart-bar"></i> Results &amp; Grading</a>
+            <a href="/pages/lecturer/concerns.html" class="active"><i class="fas fa-comment-dots"></i> Concerns</a>
+            <a href="/pages/lecturer/announcements.html"><i class="fas fa-bullhorn"></i> Announcements</a>
+        </nav>
+        <div class="sidebar-bottom">
+            <div class="sidebar-user" id="sidebarUser"></div>
+            <button class="btn-logout" onclick="logout()">Sign Out</button>
+        </div>
+    </aside>
+
+    <main class="main-content">
+        <div class="page-header">
+            <div class="page-header-text">
+                <h1>Student Concerns</h1>
+                <p>Review and respond to concerns submitted by your students</p>
+            </div>
+            <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+                <select id="concernModuleSel" class="form-control" style="width:200px" onchange="onConcernModuleChange()">
+                    <option value="">All Modules</option>
+                </select>
+                <select id="concernExamSel" class="form-control" style="width:220px" onchange="applyConcernFilters()">
+                    <option value="">All Exams</option>
+                </select>
+                <select id="concernStatusSel" class="form-control" style="width:130px" onchange="applyConcernFilters()">
+                    <option value="ALL">All Status</option>
+                    <option value="OPEN">Open</option>
+                    <option value="RESOLVED">Resolved</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="table-wrapper">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Student</th>
+                            <th>Exam</th>
+                            <th>Subject</th>
+                            <th>Message</th>
+                            <th>Status</th>
+                            <th>Submitted</th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody id="lecturerConcernsTbody">
+                        <tr><td colspan="7"><div class="loading">Loading…</div></td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </main>
+</div>
+
+<!-- Reply Modal -->
+<div id="replyModal" class="modal-overlay hidden" onclick="if(event.target===this)closeModal('replyModal')">
+    <div class="modal">
+        <div class="modal-header">
+            <h3>Reply to Concern</h3>
+            <button class="modal-close" onclick="closeModal('replyModal')"><i class="fas fa-xmark"></i></button>
+        </div>
+        <div class="modal-body">
+            <div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;padding:14px;margin-bottom:16px">
+                <div style="font-size:13px;color:#64748b;margin-bottom:4px" id="replyConcernMeta"></div>
+                <div style="font-weight:600;margin-bottom:6px" id="replyConcernSubject"></div>
+                <div style="color:#374151" id="replyConcernMessage"></div>
+            </div>
+            <div class="form-group">
+                <label>Your Reply</label>
+                <textarea id="replyText" class="form-control" rows="5" placeholder="Write your reply…" style="resize:vertical"></textarea>
+            </div>
+            <div class="form-group" style="display:flex;align-items:center;gap:8px">
+                <input type="checkbox" id="resolvedCheck" style="width:16px;height:16px">
+                <label for="resolvedCheck" style="margin:0;cursor:pointer">Mark as Resolved</label>
+            </div>
+            <div id="replyError" class="alert alert-danger hidden"></div>
+        </div>
+        <div class="modal-footer">
+            <button class="btn btn-secondary" onclick="closeModal('replyModal')">Cancel</button>
+            <button class="btn btn-primary" onclick="submitReply()"><i class="fas fa-reply"></i> Send Reply</button>
+        </div>
+    </div>
+</div>
+
+<div id="toast"></div>
+<script src="/js/auth.js"></script>
+<script src="/js/lecturer.js"></script>
+<script>initLecturerConcerns();</script>
+</body>
+</html>

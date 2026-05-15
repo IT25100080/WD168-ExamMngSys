@@ -48,6 +48,22 @@ function populateSidebarUser() {
     if (user.passwordResetRequired) {
         showForceChangePwdModal(() => {});
     }
+
+    if (user.role === 'STUDENT') loadNotifBadge();
+}
+
+async function loadNotifBadge() {
+    const badge = document.getElementById('notifBadge');
+    if (!badge) return;
+    const res = await apiFetch('/api/student/announcements/unread-count');
+    if (!res || !res.ok) return;
+    const { count } = await res.json();
+    if (count > 0) {
+        badge.textContent = count;
+        badge.style.display = 'inline';
+    } else {
+        badge.style.display = 'none';
+    }
 }
 
 function _injectChangePwdModal() {

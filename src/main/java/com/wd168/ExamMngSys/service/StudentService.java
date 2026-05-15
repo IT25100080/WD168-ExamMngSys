@@ -1,6 +1,7 @@
 package com.wd168.ExamMngSys.service;
 
 import com.wd168.ExamMngSys.model.AcademicYear;
+import com.wd168.ExamMngSys.model.Concern;
 import com.wd168.ExamMngSys.model.Exam;
 import com.wd168.ExamMngSys.model.ExamAttempt;
 import com.wd168.ExamMngSys.model.Module;
@@ -8,6 +9,7 @@ import com.wd168.ExamMngSys.model.Semester;
 import com.wd168.ExamMngSys.model.StudentModule;
 import com.wd168.ExamMngSys.model.User;
 import com.wd168.ExamMngSys.repository.AcademicYearRepository;
+import com.wd168.ExamMngSys.repository.ConcernRepository;
 import com.wd168.ExamMngSys.repository.ExamAttemptRepository;
 import com.wd168.ExamMngSys.repository.ExamRepository;
 import com.wd168.ExamMngSys.repository.ModuleRepository;
@@ -34,6 +36,7 @@ public class StudentService {
     private final ExamRepository examRepository;
     private final ExamAttemptRepository examAttemptRepository;
     private final UserRepository userRepository;
+    private final ConcernRepository concernRepository;
 
     public List<AcademicYear> getAllYears() {
         return academicYearRepository.findAllByOrderByDisplayOrderAsc();
@@ -112,5 +115,22 @@ public class StudentService {
         return examAttemptRepository.findByStudentId(studentId).stream()
             .filter(a -> a.getExam().getResultsReleased())
             .collect(Collectors.toList());
+    }
+
+    public List<Concern> getStudentConcerns(Long studentId) {
+        return concernRepository.findByStudentIdOrderByCreatedAtDesc(studentId);
+    }
+
+    public Concern submitConcern(Long studentId, Long examId, String subject, String message) {
+        Exam exam = examRepository.findById(examId)
+            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Exam not found"));
+        examAttemptRepository.findByStudentIdAndExamId(studentId, examId)
+            .orElseThrow(() -> new ResponseStatusException(HttpStatus.FORBIDDEN, "No attempt found for this exam"));
+        Concern concern = new Concern();
+        concern.setStudent(userRepository.getReferenceById(studentId));
+        concern.setExam(exam);
+        concern.setSubject(subject);
+        concern.setMessage(message);
+        return concernRepository.save(concern);
     }
 }

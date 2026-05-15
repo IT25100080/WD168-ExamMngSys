@@ -372,6 +372,154 @@ function downloadStudentMarksheet() {
 }
 
 /* ============================================================
+   ANNOUNCEMENTS
+   ============================================================ */
+let allAnnouncements = [];
+
+async function initAnnouncements() {
+    const res = await apiFetch('/api/student/announcements');
+    if (!res) return;
+    allAnnouncements = await res.json();
+    filterAnnouncements();
+    markAllRead();
+}
+
+function filterAnnouncements() {
+    const filter = document.getElementById('announcementFilterSel')?.value || 'ALL';
+    const list = filter === 'ALL' ? allAnnouncements
+        : filter === 'UNREAD' ? allAnnouncements.filter(a => !a.read)
+        : allAnnouncements.filter(a => a.read);
+    renderAnnouncements(list);
+}
+
+function renderAnnouncements(list) {
+    const container = document.getElementById('announcementsContainer');
+    if (!container) return;
+    if (!list.length) {
+        container.innerHTML = `<div class="empty-state"><div class="empty-icon"><i class="fas fa-bell-slash fa-3x"></i></div><p>No announcements found.</p></div>`;
+        return;
+    }
+    container.innerHTML = list.map(a => `
+        <div class="card" style="margin-bottom:14px;border-left:4px solid ${a.read ? '#e2e8f0' : '#2563eb'}">
+            <div class="card-header" style="padding:14px 18px;gap:12px">
+                <div style="flex:1;min-width:0">
+                    <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+                        ${!a.read ? '<span style="width:8px;height:8px;border-radius:50%;background:#2563eb;display:inline-block;flex-shrink:0"></span>' : ''}
+                        <strong style="font-size:15px">${esc(a.title)}</strong>
+                        ${a.module ? `<span class="badge badge-draft">${esc(a.module.name)}</span>` : '<span class="badge badge-active">Global</span>'}
+                    </div>
+                    <div class="text-muted" style="font-size:12px;margin-top:4px">
+                        Posted by ${esc(a.postedBy?.fullName || a.postedBy?.username || '—')} · ${formatDate(a.createdAt)}
+                    </div>
+                </div>
+            </div>
+            <div style="padding:0 18px 16px;color:#374151;white-space:pre-wrap">${esc(a.message)}</div>
+        </div>`).join('');
+}
+
+async function markAllRead() {
+    const unread = allAnnouncements.filter(a => !a.read).map(a => a.id);
+    if (!unread.length) return;
+    const res = await apiFetch('/api/student/announcements/mark-read', {
+        method: 'POST', body: JSON.stringify({ ids: unread })
+    });
+    if (res && res.ok) {
+        allAnnouncements.forEach(a => { a.read = true; });
+        const badge = document.getElementById('notifBadge');
+        if (badge) badge.style.display = 'none';
+    }
+}
+
+/* ============================================================
+   CONCERNS
+   ============================================================ */
+let allConcerns = [];
+let replyingConcernId = null;
+
+async function initConcerns() {
+    await Promise.all([loadConcerns(), loadConcernExams()]);
+}
+
+async function loadConcerns() {
+    setLoading('concernsTbody');
+    const res = await apiFetch('/api/student/concerns');
+    if (!res) return;
+    allConcerns = await res.json();
+    renderConcerns(allConcerns);
+}
+
+async function loadConcernExams() {
+    const res = await apiFetch('/api/student/modules/enrolled');
+    if (!res) return;
+    const mods = await res.json();
+    const examResults = await Promise.all(
+        mods.map(m => apiFetch(`/api/student/modules/${m.id}/exams`).then(r => r ? r.json() : []))
+    );
+    const exams = examResults.flat();
+    const sel = document.getElementById('concernExamSel');
+    if (!sel) return;
+    sel.innerHTML = '<option value="">-- Select Exam --</option>' +
+        exams.map(e => `<option value="${e.id}">${esc(e.module?.name || '')} – ${esc(e.title)}</option>`).join('');
+}
+
+function renderConcerns(list) {
+    const tbody = document.getElementById('concernsTbody');
+    if (!tbody) return;
+    if (!list.length) {
+        tbody.innerHTML = `<tr><td colspan="6" class="text-center text-muted" style="padding:32px">No concerns submitted yet.</td></tr>`;
+        return;
+    }
+    tbody.innerHTML = list.map(c => `
+        <tr>
+            <td><strong>${esc(c.exam?.title || '—')}</strong><div class="text-muted">${esc(c.exam?.module?.name || '')}</div></td>
+            <td>${esc(c.subject)}</td>
+            <td style="max-width:220px;white-space:normal">${esc(c.message)}</td>
+            <td><span class="badge ${c.status === 'RESOLVED' ? 'badge-active' : 'badge-draft'}">${c.status}</span></td>
+            <td class="text-muted">${formatDate(c.createdAt)}</td>
+            <td style="max-width:220px;white-space:normal">
+                ${c.lecturerReply
+                    ? `<div style="color:#374151">${esc(c.lecturerReply)}</div><div class="text-muted" style="font-size:12px">${formatDate(c.repliedAt)}</div>`
+                    : '<span class="text-muted">Awaiting reply</span>'}
+            </td>
+        </tr>`).join('');
+}
+
+function openConcernModal() {
+    document.getElementById('concernSubject').value = '';
+    document.getElementById('concernMessage').value = '';
+    document.getElementById('concernExamSel').value = '';
+    document.getElementById('concernError').classList.add('hidden');
+    openModal('concernModal');
+}
+
+async function submitConcern() {
+    const examId  = document.getElementById('concernExamSel').value;
+    const subject = document.getElementById('concernSubject').value.trim();
+    const message = document.getElementById('concernMessage').value.trim();
+    const errEl   = document.getElementById('concernError');
+
+    if (!examId)  { errEl.textContent = 'Please select an exam.'; errEl.classList.remove('hidden'); return; }
+    if (!subject) { errEl.textContent = 'Please enter a subject.'; errEl.classList.remove('hidden'); return; }
+    if (!message) { errEl.textContent = 'Please enter your concern.'; errEl.classList.remove('hidden'); return; }
+
+    errEl.classList.add('hidden');
+    const res = await apiFetch('/api/student/concerns', {
+        method: 'POST',
+        body: JSON.stringify({ examId, subject, message })
+    });
+    if (!res) return;
+    if (res.ok) {
+        closeModal('concernModal');
+        toast('Concern submitted successfully.');
+        await loadConcerns();
+    } else {
+        const d = await res.json().catch(() => ({}));
+        errEl.textContent = d.message || 'Failed to submit concern.';
+        errEl.classList.remove('hidden');
+    }
+}
+
+/* ============================================================
    Helpers
    ============================================================ */
 function esc(str) {

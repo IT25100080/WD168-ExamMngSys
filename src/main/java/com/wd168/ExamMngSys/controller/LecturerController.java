@@ -3,6 +3,7 @@ package com.wd168.ExamMngSys.controller;
 import com.wd168.ExamMngSys.model.Exam;
 import com.wd168.ExamMngSys.model.Module;
 import com.wd168.ExamMngSys.model.Question;
+import com.wd168.ExamMngSys.service.AnnouncementService;
 import com.wd168.ExamMngSys.service.LecturerService;
 import com.wd168.ExamMngSys.service.UserService;
 import lombok.RequiredArgsConstructor;
@@ -21,6 +22,7 @@ public class LecturerController {
 
     private final LecturerService lecturerService;
     private final UserService userService;
+    private final AnnouncementService announcementService;
 
     @GetMapping("/modules")
     public ResponseEntity<?> getModules(Authentication auth) {
@@ -135,6 +137,39 @@ public class LecturerController {
         return ResponseEntity.ok(Map.of("message", "Attempt deleted"));
     }
 
+
+    @GetMapping("/concerns")
+    public ResponseEntity<?> getConcerns(Authentication auth) {
+        return ResponseEntity.ok(lecturerService.getLecturerConcerns(getLecturerId(auth)));
+    }
+
+    @PutMapping("/concerns/{id}/reply")
+    public ResponseEntity<?> replyConcern(@PathVariable Long id,
+                                           @RequestBody java.util.Map<String, Object> body,
+                                           Authentication auth) {
+        String reply = body.get("reply").toString();
+        boolean resolved = Boolean.parseBoolean(body.getOrDefault("resolved", "false").toString());
+        return ResponseEntity.ok(lecturerService.replyConcern(id, getLecturerId(auth), reply, resolved));
+    }
+
+    @GetMapping("/announcements")
+    public ResponseEntity<?> getLecturerAnnouncements(Authentication auth) {
+        return ResponseEntity.ok(announcementService.getLecturerAnnouncements(getLecturerId(auth)));
+    }
+
+    @PostMapping("/announcements")
+    public ResponseEntity<?> postLecturerAnnouncement(@RequestBody Map<String, Object> body, Authentication auth) {
+        Long moduleId = Long.valueOf(body.get("moduleId").toString());
+        String title = body.get("title").toString();
+        String message = body.get("message").toString();
+        return ResponseEntity.ok(announcementService.postLecturerAnnouncement(getLecturerId(auth), moduleId, title, message));
+    }
+
+    @DeleteMapping("/announcements/{id}")
+    public ResponseEntity<?> deleteLecturerAnnouncement(@PathVariable Long id, Authentication auth) {
+        announcementService.deleteAnnouncement(id, getLecturerId(auth));
+        return ResponseEntity.ok(Map.of("message", "Announcement deleted"));
+    }
 
     private Long getLecturerId(Authentication auth) {
         return userService.findByUsername(auth.getName()).getId();

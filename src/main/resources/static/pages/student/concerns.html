@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Concerns – ExamPortal</title>
+    <link rel="stylesheet" href="/css/styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+</head>
+<body>
+<div class="layout">
+    <aside class="sidebar">
+        <div class="sidebar-logo">Exam<span>Portal</span></div>
+        <nav class="sidebar-nav">
+            <a href="/pages/student/dashboard.html"><i class="fas fa-house"></i> Dashboard</a>
+            <a href="/pages/student/modules.html"><i class="fas fa-book"></i> Modules</a>
+            <a href="/pages/student/exams.html"><i class="fas fa-file-pen"></i> My Exams</a>
+            <a href="/pages/student/results.html"><i class="fas fa-chart-bar"></i> My Results</a>
+            <a href="/pages/student/concerns.html" class="active"><i class="fas fa-comment-dots"></i> Concerns</a>
+            <a href="/pages/student/announcements.html"><i class="fas fa-bell"></i> Announcements <span id="notifBadge" style="display:none;background:#ef4444;color:#fff;border-radius:10px;padding:1px 7px;font-size:11px;font-weight:700;margin-left:4px">0</span></a>
+        </nav>
+        <div class="sidebar-bottom">
+            <div class="sidebar-user" id="sidebarUser"></div>
+            <button class="btn-logout" onclick="logout()">Sign Out</button>
+        </div>
+    </aside>
+
+    <main class="main-content">
+        <div class="page-header">
+            <div class="page-header-text">
+                <h1>Concerns</h1>
+                <p>Submit and track concerns regarding your exam results</p>
+            </div>
+            <button class="btn btn-primary" onclick="openConcernModal()">
+                <i class="fas fa-plus"></i> Submit Concern
+            </button>
+        </div>
+
+        <div class="card">
+            <div class="table-wrapper">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Exam</th>
+                            <th>Subject</th>
+                            <th>Message</th>
+                            <th>Status</th>
+                            <th>Submitted</th>
+                            <th>Lecturer Reply</th>
+                        </tr>
+                    </thead>
+                    <tbody id="concernsTbody">
+                        <tr><td colspan="6"><div class="loading">Loading…</div></td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </main>
+</div>
+
+<!-- Submit Concern Modal -->
+<div id="concernModal" class="modal-overlay hidden" onclick="if(event.target===this)closeModal('concernModal')">
+    <div class="modal">
+        <div class="modal-header">
+            <h3>Submit a Concern</h3>
+            <button class="modal-close" onclick="closeModal('concernModal')"><i class="fas fa-xmark"></i></button>
+        </div>
+        <div class="modal-body">
+            <div class="form-group">
+                <label>Exam</label>
+                <select id="concernExamSel" class="form-control">
+                    <option value="">-- Select Exam --</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Subject</label>
+                <input type="text" id="concernSubject" class="form-control" placeholder="Brief description of your concern" maxlength="200">
+            </div>
+            <div class="form-group">
+                <label>Message</label>
+                <textarea id="concernMessage" class="form-control" rows="5" placeholder="Describe your concern in detail…" style="resize:vertical"></textarea>
+            </div>
+            <div id="concernError" class="alert alert-danger hidden"></div>
+        </div>
+        <div class="modal-footer">
+            <button class="btn btn-secondary" onclick="closeModal('concernModal')">Cancel</button>
+            <button class="btn btn-primary" onclick="submitConcern()"><i class="fas fa-paper-plane"></i> Submit</button>
+        </div>
+    </div>
+</div>
+
+<div id="toast"></div>
+<script src="/js/auth.js"></script>
+<script src="/js/student.js"></script>
+<script>initConcerns();</script>
+</body>
+</html>

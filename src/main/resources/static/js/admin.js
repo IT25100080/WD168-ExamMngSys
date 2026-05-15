@@ -420,6 +420,98 @@ async function unenrollStudent(studentId, moduleId) {
 }
 
 /* ============================================================
+   ANNOUNCEMENTS
+   ============================================================ */
+let adminAllModules = [];
+
+async function initAdminAnnouncements() {
+    await Promise.all([loadAdminAnnouncementsTable(), loadAdminModuleList()]);
+}
+
+async function loadAdminAnnouncementsTable() {
+    setLoading('adminAnnouncementsTbody');
+    const res = await apiFetch('/api/admin/announcements');
+    if (!res) return;
+    const list = await res.json();
+    const tbody = document.getElementById('adminAnnouncementsTbody');
+    if (!tbody) return;
+    tbody.innerHTML = list.length ? list.map(a => `
+        <tr>
+            <td>${a.module ? `<span class="badge badge-draft">${esc(a.module.name)}</span>` : '<span class="badge badge-active">Global</span>'}</td>
+            <td><strong>${esc(a.title)}</strong></td>
+            <td style="max-width:220px;white-space:normal">${esc(a.message)}</td>
+            <td>${esc(a.postedBy?.fullName || a.postedBy?.username || '—')}</td>
+            <td class="text-muted">${formatDate(a.createdAt)}</td>
+            <td><button class="btn btn-sm btn-danger" onclick="deleteAdminAnnouncement(${a.id})"><i class="fas fa-trash"></i></button></td>
+        </tr>`).join('')
+        : `<tr><td colspan="6" class="text-center text-muted" style="padding:32px">No announcements yet.</td></tr>`;
+}
+
+async function loadAdminModuleList() {
+    const res = await apiFetch('/api/admin/years');
+    if (!res) return;
+    const years = await res.json();
+    const semResults = await Promise.all(
+        years.map(y => apiFetch(`/api/admin/years/${y.id}/semesters`).then(r => r ? r.json() : []))
+    );
+    const sems = semResults.flat();
+    const modResults = await Promise.all(
+        sems.map(s => apiFetch(`/api/admin/semesters/${s.id}/modules`).then(r => r ? r.json() : []))
+    );
+    adminAllModules = modResults.flat();
+    const sel = document.getElementById('adminAnnouncementModuleSel');
+    if (!sel) return;
+    sel.innerHTML = '<option value="">-- Select Module --</option>' +
+        adminAllModules.map(m => `<option value="${m.id}">${esc(m.moduleCode)} – ${esc(m.name)}</option>`).join('');
+}
+
+function openAdminAnnouncementModal() {
+    document.getElementById('adminAnnouncementScope').value = 'GLOBAL';
+    document.getElementById('adminModuleGroup').style.display = 'none';
+    document.getElementById('adminAnnouncementTitle').value = '';
+    document.getElementById('adminAnnouncementMessage').value = '';
+    document.getElementById('adminAnnouncementError').classList.add('hidden');
+    openModal('adminAnnouncementModal');
+}
+
+function toggleModuleSelect() {
+    const scope = document.getElementById('adminAnnouncementScope').value;
+    document.getElementById('adminModuleGroup').style.display = scope === 'MODULE' ? '' : 'none';
+}
+
+async function submitAdminAnnouncement() {
+    const scope    = document.getElementById('adminAnnouncementScope').value;
+    const moduleId = scope === 'MODULE' ? document.getElementById('adminAnnouncementModuleSel').value : null;
+    const title    = document.getElementById('adminAnnouncementTitle').value.trim();
+    const message  = document.getElementById('adminAnnouncementMessage').value.trim();
+    const errEl    = document.getElementById('adminAnnouncementError');
+    if (scope === 'MODULE' && !moduleId) { errEl.textContent = 'Select a module.'; errEl.classList.remove('hidden'); return; }
+    if (!title)   { errEl.textContent = 'Enter a title.';   errEl.classList.remove('hidden'); return; }
+    if (!message) { errEl.textContent = 'Enter a message.'; errEl.classList.remove('hidden'); return; }
+    errEl.classList.add('hidden');
+    const res = await apiFetch('/api/admin/announcements', {
+        method: 'POST', body: JSON.stringify({ moduleId: moduleId || null, title, message })
+    });
+    if (res && res.ok) {
+        closeModal('adminAnnouncementModal');
+        toast('Announcement posted.');
+        await loadAdminAnnouncementsTable();
+    } else {
+        errEl.textContent = 'Failed to post announcement.';
+        errEl.classList.remove('hidden');
+    }
+}
+
+async function deleteAdminAnnouncement(id) {
+    if (!confirm('Delete this announcement?')) return;
+    const res = await apiFetch(`/api/admin/announcements/${id}`, { method: 'DELETE' });
+    if (res && res.ok) { toast('Announcement deleted.'); await loadAdminAnnouncementsTable(); }
+    else toast('Failed to delete.', 'error');
+}
+
+function formatDate(dt) { return dt ? new Date(dt).toLocaleString() : '—'; }
+
+/* ============================================================
    Helpers
    ============================================================ */
 function esc(str) {
