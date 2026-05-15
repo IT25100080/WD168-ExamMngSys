@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Exam Submissions – ExamPortal</title>
+    <link rel="stylesheet" href="/css/styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+</head>
+<body>
+<div class="layout">
+    <aside class="sidebar">
+        <div class="sidebar-logo">Exam<span>Portal</span></div>
+        <nav class="sidebar-nav">
+            <a href="/pages/admin/dashboard.html"><i class="fas fa-house"></i> Dashboard</a>
+            <a href="/pages/admin/modules.html"><i class="fas fa-book"></i> Modules</a>
+            <a href="/pages/admin/users.html"><i class="fas fa-users"></i> Users</a>
+            <a href="/pages/admin/submissions.html" class="active"><i class="fas fa-clipboard-list"></i> Submissions</a>
+            <a href="/pages/admin/announcements.html"><i class="fas fa-bullhorn"></i> Announcements</a>
+        </nav>
+        <div class="sidebar-bottom">
+            <div class="sidebar-user" id="sidebarUser"></div>
+            <button class="btn-logout" onclick="logout()">Sign Out</button>
+        </div>
+    </aside>
+
+    <main class="main-content">
+        <div class="page-header">
+            <div class="page-header-text">
+                <h1>Exam Submissions</h1>
+                <p>Select a module to view and manage submissions per exam</p>
+            </div>
+        </div>
+
+        <div class="filter-bar">
+            <select id="adminModuleSel" class="form-control" onchange="onAdminModuleChange()" style="max-width:300px">
+                <option value="">-- Select Module --</option>
+            </select>
+        </div>
+
+        <div id="adminSubmissionsContainer">
+            <div class="empty-state" style="padding:64px">
+                <div class="empty-icon"><i class="fas fa-clipboard-list fa-3x"></i></div>
+                <p>Select a module to view its submissions.</p>
+            </div>
+        </div>
+    </main>
+</div>
+
+<div id="toast"></div>
+<script src="/js/auth.js"></script>
+<script src="/js/admin.js"></script>
+<script>initSubmissions();</script>
+</body>
+</html>

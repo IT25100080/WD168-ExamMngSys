@@ -125,4 +125,26 @@ public class AdminController {
         announcementService.deleteAnnouncementAsAdmin(id);
         return ResponseEntity.ok(Map.of("message", "Announcement deleted"));
     }
+
+    @GetMapping("/exams")
+    public ResponseEntity<?> getAllExams() {
+        return ResponseEntity.ok(adminService.getAllExams());
+    }
+
+    @GetMapping("/exams/{examId}/attempts")
+    public ResponseEntity<?> getAttempts(@PathVariable Long examId) {
+        return ResponseEntity.ok(adminService.getAttemptsByExam(examId));
+    }
+
+    @DeleteMapping("/attempts/{attemptId}")
+    public ResponseEntity<?> deleteAttempt(@PathVariable Long attemptId) {
+        adminService.deleteAttempt(attemptId);
+        return ResponseEntity.ok(Map.of("message", "Submission deleted"));
+    }
+
+    @DeleteMapping("/exams/{examId}/attempts")
+    public ResponseEntity<?> deleteAllAttemptsByExam(@PathVariable Long examId) {
+        int count = adminService.deleteAllAttemptsByExam(examId);
+        return ResponseEntity.ok(Map.of("message", "Deleted " + count + " submission(s)", "count", count));
+    }
 }

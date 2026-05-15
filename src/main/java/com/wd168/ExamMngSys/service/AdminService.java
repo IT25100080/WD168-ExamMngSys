@@ -1,6 +1,7 @@
 package com.wd168.ExamMngSys.service;
 
 import com.wd168.ExamMngSys.model.AcademicYear;
+import com.wd168.ExamMngSys.model.Exam;
 import com.wd168.ExamMngSys.model.ExamAttempt;
 import com.wd168.ExamMngSys.model.Module;
 import com.wd168.ExamMngSys.model.Semester;
@@ -8,6 +9,7 @@ import com.wd168.ExamMngSys.model.StudentModule;
 import com.wd168.ExamMngSys.model.User;
 import com.wd168.ExamMngSys.repository.AcademicYearRepository;
 import com.wd168.ExamMngSys.repository.ExamAttemptRepository;
+import com.wd168.ExamMngSys.repository.ExamRepository;
 import com.wd168.ExamMngSys.repository.ModuleRepository;
 import com.wd168.ExamMngSys.repository.SemesterRepository;
 import com.wd168.ExamMngSys.repository.StudentAnswerRepository;
@@ -32,6 +34,7 @@ public class AdminService {
     private final SemesterRepository semesterRepository;
     private final ModuleRepository moduleRepository;
     private final StudentModuleRepository studentModuleRepository;
+    private final ExamRepository examRepository;
     private final ExamAttemptRepository examAttemptRepository;
     private final StudentAnswerRepository studentAnswerRepository;
     private final PasswordEncoder passwordEncoder;
@@ -152,5 +155,31 @@ public class AdminService {
     public void unenrollStudent(Long studentId, Long moduleId) {
         studentModuleRepository.findByStudentIdAndModuleId(studentId, moduleId)
             .ifPresent(studentModuleRepository::delete);
+    }
+
+    public List<Exam> getAllExams() {
+        return examRepository.findAll();
+    }
+
+    public List<ExamAttempt> getAttemptsByExam(Long examId) {
+        return examAttemptRepository.findByExamId(examId);
+    }
+
+    @Transactional
+    public void deleteAttempt(Long attemptId) {
+        ExamAttempt attempt = examAttemptRepository.findById(attemptId)
+            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Attempt not found"));
+        studentAnswerRepository.deleteByAttemptId(attemptId);
+        examAttemptRepository.delete(attempt);
+    }
+
+    @Transactional
+    public int deleteAllAttemptsByExam(Long examId) {
+        List<ExamAttempt> attempts = examAttemptRepository.findByExamId(examId);
+        for (ExamAttempt attempt : attempts) {
+            studentAnswerRepository.deleteByAttemptId(attempt.getId());
+        }
+        examAttemptRepository.deleteAll(attempts);
+        return attempts.size();
     }
 }

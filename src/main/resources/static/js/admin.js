@@ -512,6 +512,129 @@ async function deleteAdminAnnouncement(id) {
 function formatDate(dt) { return dt ? new Date(dt).toLocaleString() : '—'; }
 
 /* ============================================================
+   SUBMISSIONS
+   ============================================================ */
+let adminAllExams      = [];
+let adminExamAttempts  = {};   // examId → attempts[]
+let adminSelectedModId = null;
+
+async function initSubmissions() {
+    const res = await apiFetch('/api/admin/exams');
+    if (!res) return;
+    adminAllExams = await res.json();
+
+    const modSel = document.getElementById('adminModuleSel');
+    if (!modSel) return;
+
+    const modulesMap = new Map();
+    adminAllExams.forEach(e => { if (e.module) modulesMap.set(e.module.id, e.module); });
+    modSel.innerHTML = '<option value="">-- Select Module --</option>' +
+        [...modulesMap.values()].map(m =>
+            `<option value="${m.id}">${esc(m.moduleCode)} – ${esc(m.name)}</option>`
+        ).join('');
+}
+
+async function onAdminModuleChange() {
+    adminSelectedModId = document.getElementById('adminModuleSel').value || null;
+    adminExamAttempts  = {};
+
+    if (!adminSelectedModId) {
+        renderAdminSubmissions();
+        return;
+    }
+
+    const container = document.getElementById('adminSubmissionsContainer');
+    if (container) container.innerHTML = '<div class="loading">Loading submissions…</div>';
+
+    const moduleExams = adminAllExams.filter(e => e.module && String(e.module.id) === adminSelectedModId);
+    if (!moduleExams.length) {
+        renderAdminSubmissions();
+        return;
+    }
+
+    const results = await Promise.all(
+        moduleExams.map(e => apiFetch(`/api/admin/exams/${e.id}/attempts`).then(r => r ? r.json() : []))
+    );
+    moduleExams.forEach((e, i) => { adminExamAttempts[e.id] = { exam: e, attempts: results[i] }; });
+
+    renderAdminSubmissions();
+}
+
+function renderAdminSubmissions() {
+    const container = document.getElementById('adminSubmissionsContainer');
+    if (!container) return;
+
+    if (!adminSelectedModId) {
+        container.innerHTML = `<div class="empty-state" style="padding:64px">
+            <div class="empty-icon"><i class="fas fa-clipboard-list fa-3x"></i></div>
+            <p>Select a module to view its submissions.</p></div>`;
+        return;
+    }
+
+    const entries = Object.values(adminExamAttempts);
+    if (!entries.length) {
+        container.innerHTML = `<div class="empty-state" style="padding:64px">
+            <div class="empty-icon"><i class="fas fa-inbox fa-3x"></i></div>
+            <p>No exams found for this module.</p></div>`;
+        return;
+    }
+
+    container.innerHTML = entries.map(({ exam, attempts }) => {
+        const rows = attempts.length ? attempts.map(a => {
+            const scored = (a.autoScore || 0) + (a.manualScore || 0);
+            return `<tr>
+                <td>
+                    <strong>${esc(a.student?.fullName || a.student?.username || 'Unknown')}</strong>
+                    <div class="text-muted">@${esc(a.student?.username || '')}</div>
+                </td>
+                <td><span class="badge badge-${(a.status || '').toLowerCase()}">${a.status}</span></td>
+                <td>${scored} / ${a.maxScore || 0}</td>
+                <td class="text-muted">${formatDate(a.startTime)}</td>
+                <td class="text-muted">${formatDate(a.endTime)}</td>
+            </tr>`;
+        }).join('') : `<tr><td colspan="5" class="text-center text-muted" style="padding:20px">No submissions yet.</td></tr>`;
+
+        return `
+        <div class="card" style="margin-bottom:20px" id="exam-submissions-${exam.id}">
+            <div class="card-header">
+                <div>
+                    <h2 style="margin-bottom:4px">${esc(exam.title)}</h2>
+                    <span class="badge badge-${exam.status.toLowerCase()}">${exam.status}</span>
+                    <span class="text-muted" style="font-size:13px;margin-left:8px">${attempts.length} submission${attempts.length !== 1 ? 's' : ''}</span>
+                </div>
+                ${attempts.length ? `
+                <button class="btn btn-sm btn-danger" onclick="deleteExamSubmissions(${exam.id})">
+                    <i class="fas fa-trash"></i> Delete All Submissions
+                </button>` : ''}
+            </div>
+            <div class="table-wrapper">
+                <table>
+                    <thead><tr><th>Student</th><th>Status</th><th>Score</th><th>Started</th><th>Submitted</th></tr></thead>
+                    <tbody>${rows}</tbody>
+                </table>
+            </div>
+        </div>`;
+    }).join('');
+}
+
+async function deleteExamSubmissions(examId) {
+    const entry = adminExamAttempts[examId];
+    if (!entry) return;
+    const count = entry.attempts.length;
+    if (!confirm(`Delete all ${count} submission(s) for "${entry.exam.title}"? Students will be able to re-attempt if the exam is still active.`)) return;
+
+    const res = await apiFetch(`/api/admin/exams/${examId}/attempts`, { method: 'DELETE' });
+    if (res && res.ok) {
+        const data = await res.json();
+        toast(data.message || 'Submissions deleted.');
+        adminExamAttempts[examId].attempts = [];
+        renderAdminSubmissions();
+    } else {
+        toast('Failed to delete submissions.', 'error');
+    }
+}
+
+/* ============================================================
    Helpers
    ============================================================ */
 function esc(str) {
