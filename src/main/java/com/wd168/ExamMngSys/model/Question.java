@@ -36,6 +36,9 @@ public class Question {
     @Column(name = "display_order")
     private Integer displayOrder;
 
+    @Column(name = "image_url", length = 500)
+    private String imageUrl;
+
     @OneToMany(mappedBy = "question", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<AnswerOption> options;
 

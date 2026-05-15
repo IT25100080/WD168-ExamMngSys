@@ -133,6 +133,16 @@ function loadQuestion(idx) {
     qtEl.textContent = q.questionText;
     document.getElementById('marksLabel').textContent = `${q.marks} mark${q.marks > 1 ? 's' : ''}`;
 
+    const imgEl = document.getElementById('questionImage');
+    if (imgEl) {
+        if (q.imageUrl) {
+            imgEl.src = q.imageUrl;
+            imgEl.style.display = 'block';
+        } else {
+            imgEl.style.display = 'none';
+        }
+    }
+
     const area = document.getElementById('answerArea');
     area.innerHTML = '';
 

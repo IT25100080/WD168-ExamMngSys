@@ -30,6 +30,7 @@ public class SecurityConfig {
                     "/api/auth/**",
                     "/pages/**",
                     "/css/**", "/js/**",
+                    "/uploads/**",
                     "/h2-console", "/h2-console/**"
 
                 ).permitAll()

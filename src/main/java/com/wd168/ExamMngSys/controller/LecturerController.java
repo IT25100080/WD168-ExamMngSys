@@ -10,10 +10,16 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/lecturer")
@@ -72,14 +78,26 @@ public class LecturerController {
         return ResponseEntity.ok(lecturerService.getQuestions(examId, getLecturerId(auth)));
     }
 
+    @PostMapping("/questions/upload-image")
+    public ResponseEntity<?> uploadQuestionImage(@RequestParam("file") MultipartFile file) throws IOException {
+        String original = file.getOriginalFilename() != null ? file.getOriginalFilename() : "image";
+        String ext = original.contains(".") ? original.substring(original.lastIndexOf('.')) : "";
+        String filename = UUID.randomUUID() + ext;
+        Path dir = Paths.get("uploads/question-images");
+        Files.createDirectories(dir);
+        Files.copy(file.getInputStream(), dir.resolve(filename));
+        return ResponseEntity.ok(Map.of("url", "/uploads/question-images/" + filename));
+    }
+
     @PostMapping("/exams/{examId}/questions")
     public ResponseEntity<?> addQuestion(@PathVariable Long examId, @RequestBody Map<String, Object> body, Authentication auth) {
         String text = (String) body.get("questionText");
         Question.QuestionType type = Question.QuestionType.valueOf((String) body.get("questionType"));
         int marks = ((Number) body.get("marks")).intValue();
+        String imageUrl = (String) body.get("imageUrl");
         @SuppressWarnings("unchecked")
         List<Map<String, Object>> options = (List<Map<String, Object>>) body.get("options");
-        return ResponseEntity.ok(lecturerService.addQuestion(examId, getLecturerId(auth), text, type, marks, options));
+        return ResponseEntity.ok(lecturerService.addQuestion(examId, getLecturerId(auth), text, type, marks, options, imageUrl));
     }
 
     @PutMapping("/questions/{questionId}")
@@ -87,9 +105,10 @@ public class LecturerController {
         String text = (String) body.get("questionText");
         Question.QuestionType type = Question.QuestionType.valueOf((String) body.get("questionType"));
         int marks = ((Number) body.get("marks")).intValue();
+        String imageUrl = (String) body.get("imageUrl");
         @SuppressWarnings("unchecked")
         List<Map<String, Object>> options = (List<Map<String, Object>>) body.get("options");
-        return ResponseEntity.ok(lecturerService.updateQuestion(questionId, getLecturerId(auth), text, type, marks, options));
+        return ResponseEntity.ok(lecturerService.updateQuestion(questionId, getLecturerId(auth), text, type, marks, options, imageUrl));
     }
 
     @DeleteMapping("/questions/{questionId}")

@@ -196,13 +196,14 @@ function renderQuestionsTable(examId) {
             : `<div class="table-wrapper">
                <table>
                  <thead><tr>
-                   <th>#</th><th>Question</th><th>Type</th><th>Marks</th><th></th>
+                   <th>#</th><th>Question</th><th>Image</th><th>Type</th><th>Marks</th><th></th>
                  </tr></thead>
                  <tbody>
                    ${qs.map((q, i) => `
                    <tr>
                      <td style="color:#64748b">${i + 1}</td>
                      <td style="white-space:pre-wrap">${esc(q.questionText.length > 90 ? q.questionText.slice(0, 90) + '…' : q.questionText)}</td>
+                     <td>${q.imageUrl ? `<img src="${q.imageUrl}" alt="img" style="height:40px;width:60px;object-fit:cover;border-radius:4px;border:1px solid #e2e8f0">` : '<span class="text-muted">—</span>'}</td>
                      <td><span class="badge badge-draft">${q.questionType}</span></td>
                      <td>${q.marks}</td>
                      <td>
@@ -295,6 +296,7 @@ function showAddQuestionModal(examId) {
     optionCount = 0;
     document.getElementById('optionsSection').classList.add('hidden');
     document.getElementById('optionRows').innerHTML = '';
+    resetQuestionImage();
     openModal('questionModal');
 }
 
@@ -313,6 +315,9 @@ function showEditQuestionModal(questionId, examId) {
     document.getElementById('qText').value  = question.questionText;
     document.getElementById('qMarks').value = question.marks;
     document.getElementById('qType').value  = question.questionType;
+
+    resetQuestionImage();
+    if (question.imageUrl) setQuestionImagePreview(question.imageUrl);
 
     const sec = document.getElementById('optionsSection');
     if (question.questionType === 'SHORT_ANSWER') {
@@ -386,11 +391,23 @@ async function saveQuestion() {
         if (!options.some(o => o.isCorrect)) { toast('Mark at least one option as correct.', 'error'); return; }
     }
 
+    // Upload image if a new file was selected
+    let imageUrl = document.getElementById('qImageUrl').value || null;
+    const fileInput = document.getElementById('qImageFile');
+    if (fileInput && fileInput.files && fileInput.files[0]) {
+        const formData = new FormData();
+        formData.append('file', fileInput.files[0]);
+        const upRes = await fetch('/api/lecturer/questions/upload-image', { method: 'POST', body: formData });
+        if (!upRes.ok) { toast('Image upload failed.', 'error'); return; }
+        const upData = await upRes.json();
+        imageUrl = upData.url;
+    }
+
     const url    = editingQuestionId
         ? `/api/lecturer/questions/${editingQuestionId}`
         : `/api/lecturer/exams/${currentExamId}/questions`;
     const method = editingQuestionId ? 'PUT' : 'POST';
-    const res = await apiFetch(url, { method, body: JSON.stringify({ questionText, questionType, marks, options }) });
+    const res = await apiFetch(url, { method, body: JSON.stringify({ questionText, questionType, marks, options, imageUrl }) });
     if (!res) return;
     if (res.ok) {
         closeModal('questionModal');
@@ -1118,6 +1135,50 @@ async function submitReply() {
         errEl.textContent = 'Failed to send reply.';
         errEl.classList.remove('hidden');
     }
+}
+
+/* ============================================================
+   QUESTION IMAGE HELPERS
+   ============================================================ */
+function resetQuestionImage() {
+    const fileInput = document.getElementById('qImageFile');
+    const urlInput  = document.getElementById('qImageUrl');
+    const preview   = document.getElementById('qImagePreview');
+    const removeBtn = document.getElementById('qImageRemoveBtn');
+    if (fileInput) fileInput.value = '';
+    if (urlInput)  urlInput.value  = '';
+    if (preview)   preview.innerHTML = '';
+    if (removeBtn) removeBtn.classList.add('hidden');
+}
+
+function setQuestionImagePreview(url) {
+    const urlInput  = document.getElementById('qImageUrl');
+    const preview   = document.getElementById('qImagePreview');
+    const removeBtn = document.getElementById('qImageRemoveBtn');
+    if (urlInput)  urlInput.value = url;
+    if (preview)   preview.innerHTML = `<img src="${url}" alt="Question image" style="max-width:100%;max-height:200px;border-radius:6px;border:1px solid #e2e8f0">`;
+    if (removeBtn) removeBtn.classList.remove('hidden');
+}
+
+function onQuestionImageChange() {
+    const fileInput = document.getElementById('qImageFile');
+    const urlInput  = document.getElementById('qImageUrl');
+    const removeBtn = document.getElementById('qImageRemoveBtn');
+    if (!fileInput || !fileInput.files || !fileInput.files[0]) return;
+    // Clear stored URL so the upload uses the new file
+    if (urlInput)  urlInput.value = '';
+    // Show local preview immediately
+    const reader = new FileReader();
+    reader.onload = e => {
+        const preview = document.getElementById('qImagePreview');
+        if (preview) preview.innerHTML = `<img src="${e.target.result}" alt="Preview" style="max-width:100%;max-height:200px;border-radius:6px;border:1px solid #e2e8f0">`;
+    };
+    reader.readAsDataURL(fileInput.files[0]);
+    if (removeBtn) removeBtn.classList.remove('hidden');
+}
+
+function removeQuestionImage() {
+    resetQuestionImage();
 }
 
 /* ============================================================

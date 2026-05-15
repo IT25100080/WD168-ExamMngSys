@@ -97,7 +97,7 @@ public class LecturerService {
     @Transactional
     public Question addQuestion(Long examId, Long lecturerId, String questionText,
                                  Question.QuestionType questionType, int marks,
-                                 List<Map<String, Object>> options) {
+                                 List<Map<String, Object>> options, String imageUrl) {
         Exam exam = getExamForLecturer(examId, lecturerId);
         int order = questionRepository.countByExamId(examId) + 1;
 
@@ -107,6 +107,7 @@ public class LecturerService {
         question.setQuestionType(questionType);
         question.setMarks(marks);
         question.setDisplayOrder(order);
+        question.setImageUrl(imageUrl != null && !imageUrl.isBlank() ? imageUrl : null);
         question = questionRepository.save(question);
 
         if (options != null) {
@@ -124,7 +125,7 @@ public class LecturerService {
     @Transactional
     public Question updateQuestion(Long questionId, Long lecturerId, String questionText,
                                     Question.QuestionType questionType, int marks,
-                                    List<Map<String, Object>> options) {
+                                    List<Map<String, Object>> options, String imageUrl) {
         Question question = questionRepository.findById(questionId)
             .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Question not found"));
         getExamForLecturer(question.getExam().getId(), lecturerId);
@@ -132,6 +133,7 @@ public class LecturerService {
         question.setQuestionText(questionText);
         question.setQuestionType(questionType);
         question.setMarks(marks);
+        question.setImageUrl(imageUrl != null && !imageUrl.isBlank() ? imageUrl : null);
         question = questionRepository.save(question);
 
         answerOptionRepository.deleteByQuestionId(questionId);

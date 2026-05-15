@@ -135,6 +135,15 @@
                     <label>Question Text <span style="color:red">*</span></label>
                     <textarea id="qText" class="form-control" rows="3" placeholder="Enter the question here…" required></textarea>
                 </div>
+                <div class="form-group">
+                    <label>Image (optional)</label>
+                    <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+                        <input type="file" id="qImageFile" accept="image/*" class="form-control" style="flex:1;min-width:0" onchange="onQuestionImageChange()">
+                        <button type="button" class="btn btn-sm btn-danger hidden" id="qImageRemoveBtn" onclick="removeQuestionImage()"><i class="fas fa-xmark"></i> Remove</button>
+                    </div>
+                    <div id="qImagePreview" style="margin-top:8px"></div>
+                    <input type="hidden" id="qImageUrl">
+                </div>
                 <div id="optionsSection" class="hidden">
                     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
                         <label style="margin:0">Answer Options <span style="color:red">*</span></label>
