@@ -264,14 +264,6 @@ mvn spring-boot:run
 | URL | Description |
 |-----|-------------|
 | `http://localhost:8080` | Application (redirects to login) |
-| `http://localhost:8080/h2-console` | H2 Database console |
-
-**H2 Console settings:**
-```
-JDBC URL:  jdbc:h2:file:./data/examdb
-Username:  sa
-Password:  (leave blank)
-```
 
 ### Default Admin Credentials
 
@@ -288,10 +280,6 @@ Password : admin123
 
 ```properties
 server.port=8080
-
-# H2 File-based database (data persists across restarts)
-spring.datasource.url=jdbc:h2:file:./data/examdb;AUTO_SERVER=TRUE
-spring.jpa.hibernate.ddl-auto=update
 
 # Session timeout
 server.servlet.session.timeout=60m
