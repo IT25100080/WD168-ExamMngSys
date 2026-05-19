@@ -20,6 +20,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+/** Handles all announcement operations for admins, lecturers, and students. */
 @Service
 @RequiredArgsConstructor
 public class AnnouncementService {
@@ -30,21 +31,29 @@ public class AnnouncementService {
     private final ModuleRepository moduleRepository;
     private final UserRepository userRepository;
 
+    /**
+     * Posts an announcement as an admin.
+     * If moduleId is provided, the announcement is scoped to that module; otherwise it's global.
+     */
     public Announcement postAdminAnnouncement(Long adminId, Long moduleId, String title, String message) {
         Announcement a = new Announcement();
         a.setPostedBy(userRepository.getReferenceById(adminId));
         if (moduleId != null) {
             a.setModule(moduleRepository.findById(moduleId)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Module not found")));
+                    .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Module not found")));
         }
         a.setTitle(title);
         a.setMessage(message);
         return announcementRepository.save(a);
     }
 
+    /**
+     * Posts an announcement as a lecturer.
+     * Validates that the lecturer belongs to the given module before posting.
+     */
     public Announcement postLecturerAnnouncement(Long lecturerId, Long moduleId, String title, String message) {
         Module module = moduleRepository.findById(moduleId)
-            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Module not found"));
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Module not found"));
         if (module.getLecturers().stream().noneMatch(l -> l.getId().equals(lecturerId))) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Not your module");
         }
@@ -56,18 +65,24 @@ public class AnnouncementService {
         return announcementRepository.save(a);
     }
 
+    /** Returns all announcements sorted by newest first (admin use). */
     public List<Announcement> getAllAnnouncements() {
         return announcementRepository.findAllByOrderByCreatedAtDesc();
     }
 
+    /** Returns all announcements posted within a lecturer's modules. */
     public List<Announcement> getLecturerAnnouncements(Long lecturerId) {
         return announcementRepository.findByModuleLecturerId(lecturerId);
     }
 
+    /**
+     * Deletes an announcement by its owner.
+     * Clears read records first, then deletes the announcement.
+     */
     @Transactional
     public void deleteAnnouncement(Long id, Long userId) {
         Announcement a = announcementRepository.findById(id)
-            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Announcement not found"));
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Announcement not found"));
         if (!a.getPostedBy().getId().equals(userId)) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Not your announcement");
         }
@@ -75,6 +90,10 @@ public class AnnouncementService {
         announcementRepository.delete(a);
     }
 
+    /**
+     * Deletes any announcement as an admin, regardless of who posted it.
+     * Clears read records first, then deletes the announcement.
+     */
     @Transactional
     public void deleteAnnouncementAsAdmin(Long id) {
         if (!announcementRepository.existsById(id)) {
@@ -84,14 +103,21 @@ public class AnnouncementService {
         announcementRepository.deleteById(id);
     }
 
+    /**
+     * Returns announcements relevant to a student — global ones and those from their enrolled modules.
+     * Each entry includes a "read" flag indicating whether the student has read it.
+     */
     public List<Map<String, Object>> getStudentAnnouncements(Long studentId) {
         List<Long> moduleIds = studentModuleRepository.findByStudentId(studentId)
-            .stream().map(sm -> sm.getModule().getId()).collect(Collectors.toList());
+                .stream().map(sm -> sm.getModule().getId()).collect(Collectors.toList());
         Set<Long> readIds = announcementReadRepository.findByUserId(studentId)
-            .stream().map(r -> r.getAnnouncement().getId()).collect(Collectors.toSet());
+                .stream().map(r -> r.getAnnouncement().getId()).collect(Collectors.toSet());
+
+        // Fetch only global announcements if the student has no enrolled modules
         List<Announcement> list = moduleIds.isEmpty()
-            ? announcementRepository.findByModuleIsNullOrderByCreatedAtDesc()
-            : announcementRepository.findRelevantForStudent(moduleIds);
+                ? announcementRepository.findByModuleIsNullOrderByCreatedAtDesc()
+                : announcementRepository.findRelevantForStudent(moduleIds);
+
         return list.stream().map(a -> {
             Map<String, Object> map = new LinkedHashMap<>();
             map.put("id", a.getId());
@@ -105,17 +131,19 @@ public class AnnouncementService {
         }).collect(Collectors.toList());
     }
 
+    /** Returns the number of unread announcements for a student. */
     public long getUnreadCount(Long studentId) {
         List<Long> moduleIds = studentModuleRepository.findByStudentId(studentId)
-            .stream().map(sm -> sm.getModule().getId()).collect(Collectors.toList());
+                .stream().map(sm -> sm.getModule().getId()).collect(Collectors.toList());
         List<Announcement> all = moduleIds.isEmpty()
-            ? announcementRepository.findByModuleIsNullOrderByCreatedAtDesc()
-            : announcementRepository.findRelevantForStudent(moduleIds);
+                ? announcementRepository.findByModuleIsNullOrderByCreatedAtDesc()
+                : announcementRepository.findRelevantForStudent(moduleIds);
         Set<Long> readIds = announcementReadRepository.findByUserId(studentId)
-            .stream().map(r -> r.getAnnouncement().getId()).collect(Collectors.toSet());
+                .stream().map(r -> r.getAnnouncement().getId()).collect(Collectors.toSet());
         return all.stream().filter(a -> !readIds.contains(a.getId())).count();
     }
 
+    /** Marks the given announcements as read for a student, skipping any already marked. */
     @Transactional
     public void markRead(Long studentId, List<Long> announcementIds) {
         for (Long id : announcementIds) {
